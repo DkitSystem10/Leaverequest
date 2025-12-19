@@ -14,11 +14,28 @@ function Login() {
 
   // Available departments
   const departments = ['Technology', 'Education', 'Finance', 'Associates', 'Intern', 'HR', 'Sales', 'Marketing', 'Admin', 'Manager'];
+  // Department mapping based on prefix
+  const getDepartmentFromCode = (code) => {
+    if (!code) return '';
+    const upperCode = code.toUpperCase();
 
+    if (upperCode.startsWith('DM')) return 'Marketing';
+    if (upperCode.startsWith('DI')) return 'Technology';
+    if (upperCode.startsWith('MGR')) return 'Associates';
+    if (upperCode.startsWith('HR')) return 'HR';
+    if (upperCode.startsWith('ADMIN')) return 'Admin';
 
-  // Update employee code
+    return '';
+  };
+
+  // Update employee code and auto-fill department
   const handleEmpCodeChange = (e) => {
-    setEmpCode(e.target.value.toUpperCase());
+    const code = e.target.value.toUpperCase();
+    setEmpCode(code);
+    const autoDept = getDepartmentFromCode(code);
+    if (autoDept) {
+      setDepartment(autoDept);
+    }
   };
 
   const handleSubmit = async (e) => {
