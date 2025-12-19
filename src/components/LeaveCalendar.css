@@ -88,6 +88,7 @@
 }
 
 .calendar-day {
+  position: relative;
   min-height: 80px;
   padding: 8px;
   border: 2px solid #e0e0e0;
@@ -139,6 +140,13 @@
   height: 8px;
   border-radius: 50%;
   display: inline-block;
+}
+
+.calendar-holiday-indicator {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 14px;
 }
 
 .calendar-details {
@@ -198,16 +206,97 @@
 @media (max-width: 768px) {
   .calendar-header {
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
+    padding: 12px;
+    text-align: center;
   }
-  
+
+  .calendar-month-title {
+    font-size: 18px;
+    order: -1;
+    width: 100%;
+    margin-bottom: 8px;
+  }
+
+  .calendar-nav-btn {
+    width: 48%;
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .calendar-legend {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+
+  .calendar-grid {
+    padding: 8px;
+    margin: 0 -8px;
+  }
+
+  .calendar-weekday {
+    padding: 8px 2px;
+    font-size: 11px;
+  }
+
   .calendar-day {
-    min-height: 60px;
+    min-height: 50px;
     padding: 4px;
+    border-width: 1px;
   }
-  
+
   .calendar-day-number {
+    font-size: 11px;
+    margin-bottom: 2px;
+  }
+
+  .calendar-request-dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .calendar-holiday-indicator {
+    font-size: 10px;
+    top: 2px;
+    right: 2px;
+  }
+
+  .calendar-details {
+    padding: 16px;
+    margin-top: 16px;
+  }
+
+  .calendar-details h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .request-detail-card {
+    padding: 12px;
+  }
+
+  .request-detail-header strong {
+    font-size: 13px;
+  }
+
+  .request-detail-info {
     font-size: 12px;
   }
 }
 
+@media (max-width: 480px) {
+  .calendar-nav-btn {
+    font-size: 12px;
+  }
+
+  .calendar-weekday {
+    font-size: 10px;
+  }
+
+  .calendar-day {
+    min-height: 45px;
+  }
+}

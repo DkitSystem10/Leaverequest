@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { dataService } from '../utils/dataService';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import './Reports.css';
 
 function Reports({ user, scope, department, showAll = false }) {
@@ -81,7 +81,15 @@ function Reports({ user, scope, department, showAll = false }) {
       filtered = filtered.filter(req => req.type === typeFilter);
     }
 
-    // 3. Group by Department
+    // 3. Filter by Employee (if role is employee, show only their own data)
+    if (user?.role === 'employee') {
+      filtered = filtered.filter(req => {
+        const empId = req.employee_id || req.employeeId;
+        return empId === user.id;
+      });
+    }
+
+    // 4. Group by Department
     const grouped = {};
     departmentsList.forEach(dept => grouped[dept.name] = []);
 
@@ -226,7 +234,7 @@ function Reports({ user, scope, department, showAll = false }) {
           ];
         });
 
-        doc.autoTable({
+        autoTable(doc, {
           startY: yPos,
           head: [['Emp ID', 'Name', 'Designation', reportType === 'day-permission' ? 'Duration' : 'Status']],
           body: tableBody,

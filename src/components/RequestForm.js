@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { dataService } from '../utils/dataService';
 import './RequestForm.css';
 
-function RequestForm({ user, onRequestSubmitted, requestType = 'leave' }) {
+function RequestForm({ user, onRequestSubmitted, onCloseSuccess, requestType = 'leave' }) {
   const [formData, setFormData] = useState({
     employeeCode: '',
     employeeId: '',
@@ -32,15 +32,18 @@ function RequestForm({ user, onRequestSubmitted, requestType = 'leave' }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [calculatedDays, setCalculatedDays] = useState(0);
   const [successMessage, setSuccessMessage] = useState('');
+  const [casualLeaveAvailable, setCasualLeaveAvailable] = useState(true);
+  const [casualLeaveMessage, setCasualLeaveMessage] = useState('');
 
   useEffect(() => {
     // Load all employees for alternative employee selection
     const allEmployees = dataService.getAllEmployees();
-    // Filter out the current user and ensure they are from Technology department
+    // Filter alternative employees belonging to the same team/department AND status is active
     const otherEmployees = allEmployees.filter(emp =>
       emp.id !== user.id &&
       emp.role === 'employee' &&
-      (emp.department === 'Technology' || emp.department === 'technology')
+      emp.department === user.department &&
+      (emp.status === 'active' || emp.status === 'Active' || !emp.status)
     );
     setEmployees(otherEmployees);
   }, [user]);
@@ -62,6 +65,44 @@ function RequestForm({ user, onRequestSubmitted, requestType = 'leave' }) {
   }, [user, requestType]);
 
   useEffect(() => {
+    // Check if user has already taken casual leave this month
+    const checkCasualLeaveUsage = async () => {
+      if (!user) return;
+
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+
+      // Get all requests for this employee
+      const allRequests = await dataService.getRequestsByEmployee(user.id);
+
+      // Filter for approved casual leaves in current month
+      const casualLeavesThisMonth = allRequests.filter(req => {
+        if (req.status !== 'approved') return false;
+
+        // Check for casual leave mode (handle different casing/naming)
+        const isCasual = req.leaveMode === 'casual' || req.leaveMode === 'Casual Leave';
+        if (!isCasual) return false;
+
+        const reqDate = new Date(req.start_date || req.startDate);
+        return reqDate.getMonth() === currentMonth && reqDate.getFullYear() === currentYear;
+      });
+
+      if (casualLeavesThisMonth.length >= 1) {
+        setCasualLeaveAvailable(false);
+        const nextMonth = new Date(currentYear, currentMonth + 1, 1);
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        setCasualLeaveMessage(`You have already used your casual leave for this month. Next casual leave will be available from ${monthNames[nextMonth.getMonth()]} 1, ${nextMonth.getFullYear()}.`);
+      } else {
+        setCasualLeaveAvailable(true);
+        setCasualLeaveMessage('');
+      }
+    };
+
+    checkCasualLeaveUsage();
+  }, [user]);
+
+  useEffect(() => {
     // Check for conflicts when alternative employee or dates change
     if (formData.alternativeEmployeeId && formData.startDate) {
       checkConflict();
@@ -73,7 +114,7 @@ function RequestForm({ user, onRequestSubmitted, requestType = 'leave' }) {
 
   useEffect(() => {
     // Calculate number of days when start and end dates are selected
-    if (formData.type === 'leave' && formData.startDate && formData.endDate) {
+    if ((formData.type === 'leave' || formData.type === 'od') && formData.startDate && formData.endDate) {
       const start = new Date(formData.startDate);
       const end = new Date(formData.endDate);
       const diffTime = end - start;
@@ -189,6 +230,10 @@ function RequestForm({ user, onRequestSubmitted, requestType = 'leave' }) {
       if (formData.startTime && formData.endTime && formData.startTime >= formData.endTime) {
         newErrors.endTime = 'End time must be after start time';
       }
+    }
+
+    if (formData.type === 'od' && !formData.endDate) {
+      newErrors.endDate = 'End date is required for On Duty (OD) requests';
     }
 
     if (!formData.reason.trim()) {
@@ -431,66 +476,113 @@ function RequestForm({ user, onRequestSubmitted, requestType = 'leave' }) {
 
       <div className="form-group">
         <label className="form-label">Request Type *</label>
-        <div className="radio-group">
-          <label className="radio-label">
+        <div className="radio-group" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+          <label className={`radio-label ${!casualLeaveAvailable ? 'disabled-option' : ''}`} style={{ opacity: !casualLeaveAvailable ? 0.6 : 1, cursor: !casualLeaveAvailable ? 'not-allowed' : 'pointer' }}>
             <input
               type="radio"
-              name="type"
-              value="leave"
-              checked={formData.type === 'leave'}
-              onChange={handleChange}
+              name="typeSelection"
+              value="casual_leave"
+              checked={formData.type === 'leave' && formData.leaveMode === 'casual'}
+              onChange={() => {
+                if (casualLeaveAvailable) {
+                  setFormData(prev => ({ ...prev, type: 'leave', leaveMode: 'casual' }));
+                }
+              }}
+              disabled={!casualLeaveAvailable}
             />
-            <span>Leave (Full Day)</span>
+            <span>Casual Leave</span>
           </label>
+
           <label className="radio-label">
             <input
               type="radio"
-              name="type"
+              name="typeSelection"
+              value="unpaid_leave"
+              checked={formData.type === 'leave' && formData.leaveMode === 'unpaid'}
+              onChange={() => setFormData(prev => ({ ...prev, type: 'leave', leaveMode: 'unpaid' }))}
+            />
+            <span>Unpaid Leave</span>
+          </label>
+
+          <label className="radio-label">
+            <input
+              type="radio"
+              name="typeSelection"
               value="halfday"
               checked={formData.type === 'halfday'}
-              onChange={handleChange}
+              onChange={() => setFormData(prev => ({ ...prev, type: 'halfday', leaveMode: 'casual' }))}
             />
             <span>Half Day Leave</span>
           </label>
+
           <label className="radio-label">
             <input
               type="radio"
-              name="type"
+              name="typeSelection"
               value="permission"
               checked={formData.type === 'permission'}
-              onChange={handleChange}
+              onChange={() => setFormData(prev => ({ ...prev, type: 'permission', leaveMode: '' }))}
             />
             <span>Permission (Time-based)</span>
           </label>
+
+          <label className="radio-label">
+            <input
+              type="radio"
+              name="typeSelection"
+              value="od"
+              checked={formData.type === 'od'}
+              onChange={() => setFormData(prev => ({ ...prev, type: 'od', leaveMode: '' }))}
+            />
+            <span>On Duty (OD)</span>
+          </label>
         </div>
+
+        {!casualLeaveAvailable && (formData.type === 'leave' && formData.leaveMode === 'casual') && (
+          <div style={{
+            marginTop: '8px',
+            padding: '8px 12px',
+            background: '#fff1f2',
+            border: '1px solid #fda4af',
+            borderRadius: '6px',
+            color: '#be123c',
+            fontSize: '13px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span>🚫</span>
+            {casualLeaveMessage}
+          </div>
+        )}
       </div>
 
-      {(formData.type === 'leave' || formData.type === 'halfday') && (
+      {formData.type === 'halfday' && (
         <div className="form-group">
-          <label className="form-label">Leave Mode *</label>
+          <label className="form-label">Half Day Leave Mode *</label>
           <div className="radio-group">
-            <label className="radio-label">
+            <label className={`radio-label ${!casualLeaveAvailable ? 'disabled-option' : ''}`} style={{ opacity: !casualLeaveAvailable ? 0.6 : 1, cursor: !casualLeaveAvailable ? 'not-allowed' : 'pointer' }}>
               <input
                 type="radio"
                 name="leaveMode"
-                value="Casual Leave"
-                checked={formData.leaveMode === 'Casual Leave'}
+                value="casual"
+                checked={formData.leaveMode === 'casual'}
                 onChange={handleChange}
+                disabled={!casualLeaveAvailable}
               />
-              <span>Casual Leave</span>
+              <span>Casual</span>
             </label>
             <label className="radio-label">
               <input
                 type="radio"
                 name="leaveMode"
-                value="Unpaid Leave"
-                checked={formData.leaveMode === 'Unpaid Leave'}
+                value="unpaid"
+                checked={formData.leaveMode === 'unpaid'}
                 onChange={handleChange}
               />
-              <span>Unpaid Leave</span>
+              <span>Unpaid</span>
             </label>
           </div>
-          {errors.leaveMode && <div className="form-error">{errors.leaveMode}</div>}
         </div>
       )}
 
@@ -508,7 +600,7 @@ function RequestForm({ user, onRequestSubmitted, requestType = 'leave' }) {
           {errors.startDate && <div className="form-error">{errors.startDate}</div>}
         </div>
 
-        {formData.type === 'leave' && (
+        {(formData.type === 'leave' || formData.type === 'od') && (
           <div className="form-group">
             <label className="form-label">End Date *</label>
             <input
@@ -524,7 +616,7 @@ function RequestForm({ user, onRequestSubmitted, requestType = 'leave' }) {
         )}
       </div>
 
-      {formData.type === 'leave' && calculatedDays > 0 && (
+      {(formData.type === 'leave' || formData.type === 'od') && calculatedDays > 0 && (
         <div className="form-group">
           <div style={{
             padding: '10px',
@@ -644,7 +736,9 @@ function RequestForm({ user, onRequestSubmitted, requestType = 'leave' }) {
               // Auto-fill employee details when code is entered
               if (code) {
                 dataService.getEmployeeByCode(code).then(selectedEmployee => {
-                  if (selectedEmployee && selectedEmployee.role === 'employee') {
+                  const isActive = selectedEmployee && (selectedEmployee.status === 'active' || selectedEmployee.status === 'Active' || !selectedEmployee.status);
+
+                  if (selectedEmployee && selectedEmployee.role === 'employee' && selectedEmployee.department === user.department && isActive) {
                     setFormData(prev => ({
                       ...prev,
                       alternativeEmployeeId: selectedEmployee.id,
@@ -656,6 +750,32 @@ function RequestForm({ user, onRequestSubmitted, requestType = 'leave' }) {
                     setErrors(prev => ({
                       ...prev,
                       alternativeEmployeeId: ''
+                    }));
+                  } else if (selectedEmployee && !isActive) {
+                    setFormData(prev => ({
+                      ...prev,
+                      alternativeEmployeeId: '',
+                      alternativeEmployeeName: '',
+                      alternativeEmployeeRole: '',
+                      alternativeEmployeeDepartment: '',
+                      alternativeEmployeeDesignation: ''
+                    }));
+                    setErrors(prev => ({
+                      ...prev,
+                      alternativeEmployeeId: 'This employee account is deactivated'
+                    }));
+                  } else if (selectedEmployee && selectedEmployee.department !== user.department) {
+                    setFormData(prev => ({
+                      ...prev,
+                      alternativeEmployeeId: '',
+                      alternativeEmployeeName: '',
+                      alternativeEmployeeRole: '',
+                      alternativeEmployeeDepartment: '',
+                      alternativeEmployeeDesignation: ''
+                    }));
+                    setErrors(prev => ({
+                      ...prev,
+                      alternativeEmployeeId: `Employee must be from the same department (${user.department})`
                     }));
                   } else {
                     setFormData(prev => ({
@@ -832,7 +952,10 @@ function RequestForm({ user, onRequestSubmitted, requestType = 'leave' }) {
           }}>
             <button
               type="button"
-              onClick={() => setSuccessMessage('')}
+              onClick={() => {
+                setSuccessMessage('');
+                if (onCloseSuccess) onCloseSuccess();
+              }}
               style={{
                 position: 'absolute',
                 top: '10px',
@@ -854,7 +977,10 @@ function RequestForm({ user, onRequestSubmitted, requestType = 'leave' }) {
             <button
               type="button"
               className="btn btn-success"
-              onClick={() => setSuccessMessage('')}
+              onClick={() => {
+                setSuccessMessage('');
+                if (onCloseSuccess) onCloseSuccess();
+              }}
               style={{ padding: '10px 30px', fontSize: '16px' }}
             >
               Close

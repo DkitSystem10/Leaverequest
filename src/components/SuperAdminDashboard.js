@@ -162,28 +162,28 @@ function AttendanceTrendChart() {
         {trendData.map((data, index) => (
           <div key={index} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{ width: '100%', display: 'flex', flexDirection: 'column-reverse', gap: '2px' }}>
-              <div 
-                style={{ 
-                  height: `${(data.present / maxValue) * 120}px`, 
-                  background: '#22c55e', 
+              <div
+                style={{
+                  height: `${(data.present / maxValue) * 120}px`,
+                  background: '#22c55e',
                   borderRadius: '4px 4px 0 0',
                   transition: 'height 0.3s'
                 }}
                 title={`Present: ${data.present}`}
               />
-              <div 
-                style={{ 
-                  height: `${(data.absent / maxValue) * 120}px`, 
-                  background: '#ef4444', 
+              <div
+                style={{
+                  height: `${(data.absent / maxValue) * 120}px`,
+                  background: '#ef4444',
                   borderRadius: '4px 4px 0 0',
                   transition: 'height 0.3s'
                 }}
                 title={`Absent: ${data.absent}`}
               />
-              <div 
-                style={{ 
-                  height: `${(data.permission / maxValue) * 120}px`, 
-                  background: '#f59e0b', 
+              <div
+                style={{
+                  height: `${(data.permission / maxValue) * 120}px`,
+                  background: '#f59e0b',
                   borderRadius: '4px 4px 0 0',
                   transition: 'height 0.3s'
                 }}
@@ -193,7 +193,7 @@ function AttendanceTrendChart() {
           </div>
         ))}
       </div>
-      
+
       {/* Days labels */}
       <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
         {trendData.map((data, index) => (
@@ -232,7 +232,7 @@ function EmployeeList({ category }) {
       try {
         setLoading(true);
         const details = await dataService.getTodayAttendanceDetails();
-        
+
         let filteredEmployees = [];
         switch (category) {
           case 'present':
@@ -247,7 +247,7 @@ function EmployeeList({ category }) {
           default:
             filteredEmployees = [];
         }
-        
+
         setEmployees(filteredEmployees);
       } catch (error) {
         console.error('Error loading employees:', error);
@@ -279,26 +279,26 @@ function EmployeeList({ category }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {employees.map(emp => (
-        <div key={emp.id} style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          padding: '8px 12px', 
-          background: 'white', 
-          borderRadius: '8px', 
+        <div key={emp.id} style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '8px 12px',
+          background: 'white',
+          borderRadius: '8px',
           fontSize: '14px',
           border: '1px solid #e2e8f0'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ 
-              width: '24px', 
-              height: '24px', 
-              borderRadius: '50%', 
-              background: '#f1f5f9', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              fontSize: '10px', 
+            <div style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              background: '#f1f5f9',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '10px',
               fontWeight: 'bold',
               color: '#64748b'
             }}>
@@ -367,6 +367,7 @@ function SuperAdminDashboard() {
   // Holiday Management
   const [holidays, setHolidays] = useState([]);
   const [newHoliday, setNewHoliday] = useState({ name: '', fromDate: '', toDate: '', type: 'public', days: 0 });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     loadRequests();
@@ -446,7 +447,7 @@ function SuperAdminDashboard() {
     if (viewMode === 'all') {
       setRequests(allRequests);
     } else if (viewMode === 'today') {
-      setRequests(allRequests.filter(r => r.fromDate === localToday));
+      setRequests(allRequests); // Show all requests instead of just today's
     } else {
       setRequests(superAdminRequests); // 'pending'
     }
@@ -455,7 +456,7 @@ function SuperAdminDashboard() {
       pending: superAdminRequests.length,
       approved: allRequests.filter(r => r.status === 'approved').length,
       rejected: allRequests.filter(r => r.status === 'rejected').length,
-      total: allRequests.filter(r => r.fromDate === localToday).length
+      total: allRequests.length // Count all requests
     });
   };
 
@@ -512,32 +513,44 @@ function SuperAdminDashboard() {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', fontFamily: "'Inter', sans-serif" }}>
+    <div className="dashboard-container">
+      {/* Mobile Overlay & Toggle */}
+      <div
+        className={`mobile-overlay ${mobileMenuOpen ? 'active' : ''}`}
+        onClick={() => setMobileMenuOpen(false)}
+      />
+      <button
+        className="mobile-menu-btn"
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+      >
+        ☰
+      </button>
+
       {/* SIDEBAR */}
-      <div style={{ width: '280px', background: 'white', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 50, boxShadow: '4px 0 24px rgba(0,0,0,0.02)' }}>
+      <div className={`sidebar ${mobileMenuOpen ? 'open' : ''}`}>
         {/* LOGO */}
         <div style={{ padding: '32px 24px', borderBottom: '1px solid #f1f5f9' }}>
           <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '12px', letterSpacing: '-0.5px' }}>
             <div style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)' }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
             </div>
-            <span style={{ background: 'linear-gradient(90deg, #1e293b, #334155)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Super Admin</span>
+            <span style={{ background: 'linear-gradient(90deg, #1e293b, #334155)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Durkkas ERP</span>
           </h2>
         </div>
 
         {/* NAVIGATION */}
-        <div style={{ padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <SidebarItem active={activeTab === 'home'} label="Home" onClick={() => { setActiveTab('home'); setViewMode('pending'); }} color="blue" icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>} />
+        <div style={{ padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, overflowY: 'auto' }}>
+          <SidebarItem active={activeTab === 'home'} label="Home" onClick={() => { setActiveTab('home'); setViewMode('pending'); setMobileMenuOpen(false); }} color="blue" icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>} />
 
-          <SidebarItem active={activeTab === 'leave'} label="Leave Management" onClick={() => { setActiveTab('leave'); setViewMode('pending'); }} color="indigo" icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 0h7v7h-7v-7z" /></svg>} />
+          <SidebarItem active={activeTab === 'leave'} label="Leave Management" onClick={() => { setActiveTab('leave'); setViewMode('pending'); setMobileMenuOpen(false); }} color="indigo" icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 0h7v7h-7v-7z" /></svg>} />
 
-          <SidebarItem active={activeTab === 'users'} label="User Management" onClick={() => { setActiveTab('users'); setSettingsView(null); }} color="fuchsia" icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" /></svg>} />
+          <SidebarItem active={activeTab === 'users'} label="User Management" onClick={() => { setActiveTab('users'); setSettingsView(null); setMobileMenuOpen(false); }} color="fuchsia" icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" /></svg>} />
 
-          <SidebarItem active={activeTab === 'holiday'} label="Holiday Settings" onClick={() => { setActiveTab('holiday'); }} color="cyan" icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" /></svg>} />
+          <SidebarItem active={activeTab === 'holiday'} label="Holiday Settings" onClick={() => { setActiveTab('holiday'); setMobileMenuOpen(false); }} color="cyan" icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" /></svg>} />
 
-          <SidebarItem active={activeTab === 'directory'} label="Employee Directory" onClick={() => { setActiveTab('directory'); }} color="emerald" icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" /></svg>} />
+          <SidebarItem active={activeTab === 'directory'} label="Employee Directory" onClick={() => { setActiveTab('directory'); setMobileMenuOpen(false); }} color="emerald" icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" /></svg>} />
 
-          <SidebarItem active={activeTab === 'reports'} label="Reports" onClick={() => { setActiveTab('reports'); }} color="purple" icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2 10a1 1 0 011-1h4a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V10zM8 4a1 1 0 011-1h4a1 1 0 011 1v16a1 1 0 01-1 1H9a1 1 0 01-1-1V4zM14 7a1 1 0 011-1h4a1 1 0 011 1v13a1 1 0 01-1 1h-4a1 1 0 01-1-1V7z" /></svg>} />
+          <SidebarItem active={activeTab === 'reports'} label="Reports" onClick={() => { setActiveTab('reports'); setMobileMenuOpen(false); }} color="purple" icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2 10a1 1 0 011-1h4a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V10zM8 4a1 1 0 011-1h4a1 1 0 011 1v16a1 1 0 01-1 1H9a1 1 0 01-1-1V4zM14 7a1 1 0 011-1h4a1 1 0 011 1v13a1 1 0 01-1 1h-4a1 1 0 01-1-1V7z" /></svg>} />
         </div>
 
         {/* LOGOUT */}
@@ -558,10 +571,10 @@ function SuperAdminDashboard() {
       </div>
 
       {/* MAIN CONTENT */}
-      <div style={{ flex: 1, marginLeft: '280px', display: 'flex', flexDirection: 'column' }}>
-        <div className="dashboard-content" style={{ padding: '40px', maxWidth: '1600px', margin: '0 auto', width: '100%' }}>
+      <div className="main-content">
+        <div className="dashboard-content-wrapper">
           <div style={{ marginBottom: '40px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
               <div>
                 <h1 style={{ fontSize: '32px', fontWeight: '800', color: '#0f172a', letterSpacing: '-1px', marginBottom: '8px' }}>
                   {activeTab === 'home' ? 'Dashboard Overview' : activeTab === 'leave' ? 'Leave Management' : activeTab === 'users' ? 'User Management' : activeTab === 'holiday' ? 'Holiday Settings' : activeTab === 'directory' ? 'Employee Directory' : 'Reports & Analytics'}
@@ -575,15 +588,15 @@ function SuperAdminDashboard() {
                   <div style={{ padding: '8px 16px', background: '#f1f5f9', borderRadius: '8px', fontSize: '14px', color: '#64748b' }}>
                     Last updated: {new Date().toLocaleTimeString()}
                   </div>
-                  <button 
+                  <button
                     onClick={calculateUserStats}
-                    style={{ 
-                      padding: '8px 16px', 
-                      background: '#3b82f6', 
-                      color: 'white', 
-                      border: 'none', 
-                      borderRadius: '8px', 
-                      fontSize: '14px', 
+                    style={{
+                      padding: '8px 16px',
+                      background: '#3b82f6',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
                       fontWeight: '500',
                       cursor: 'pointer',
                       display: 'flex',
@@ -592,7 +605,7 @@ function SuperAdminDashboard() {
                     }}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+                      <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
                     </svg>
                     Refresh
                   </button>
@@ -604,7 +617,7 @@ function SuperAdminDashboard() {
           {activeTab === 'home' && (
             <>
               {/* Today's Report Header */}
-              <div style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', borderRadius: '20px', padding: '32px', marginBottom: '32px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', borderRadius: '20px', padding: '24px', marginBottom: '32px', color: 'white', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '120px', height: '120px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }}></div>
                 <div style={{ position: 'absolute', bottom: '-40px', left: '-40px', width: '160px', height: '160px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }}></div>
                 <div style={{ position: 'relative', zIndex: 1 }}>
@@ -627,7 +640,7 @@ function SuperAdminDashboard() {
                 </div>
               </div>
 
-              <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '32px' }}>
+              <div className="stats-grid-4" style={{ marginBottom: '32px' }}>
 
                 {/* Card 1: Active Users */}
                 <div
@@ -748,9 +761,9 @@ function SuperAdminDashboard() {
 
               {/* Chart Section - Only show on home page */}
               {activeTab === 'home' && (
-                <div style={{ background: 'white', borderRadius: '20px', padding: '32px', marginBottom: '32px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)' }}>
+                <div style={{ background: 'white', borderRadius: '20px', padding: '20px', marginBottom: '32px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)' }}>
                   <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1e293b', marginBottom: '24px' }}>User Statistics Overview</h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '32px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
                     {/* Bar Chart */}
                     <div>
                       <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#64748b', marginBottom: '16px' }}>User Distribution</h4>
@@ -818,7 +831,7 @@ function SuperAdminDashboard() {
               )}
 
               {/* Attendance Trend Chart */}
-              <div style={{ background: 'white', borderRadius: '20px', padding: '32px', marginBottom: '32px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)' }}>
+              <div style={{ background: 'white', borderRadius: '20px', padding: '20px', marginBottom: '32px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)' }}>
                 <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1e293b', marginBottom: '24px' }}>Weekly Attendance Trend</h3>
                 <div style={{ height: '200px', position: 'relative' }}>
                   <AttendanceTrendChart />
@@ -826,10 +839,10 @@ function SuperAdminDashboard() {
               </div>
 
               {/* Detailed Breakdown Section */}
-              <div style={{ background: 'white', borderRadius: '20px', padding: '32px', marginBottom: '32px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)' }}>
+              <div style={{ background: 'white', borderRadius: '20px', padding: '20px', marginBottom: '32px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)' }}>
                 <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1e293b', marginBottom: '24px' }}>Detailed Employee Breakdown</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
-                  
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+
                   {/* Present Employees */}
                   <div>
                     <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#22c55e', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -870,13 +883,13 @@ function SuperAdminDashboard() {
           {activeTab === 'leave' && (
             <>
               {/* Leave Management Stats */}
-              <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '32px' }}>
+              <div className="stats-grid-4" style={{ marginBottom: '32px' }}>
 
                 {/* Card 1: Today Requests (Matches HR Total) */}
                 <div
-                  className={`stat-card ${activeTab === 'requests' && viewMode === 'today' ? 'active' : ''}`}
+                  className={`stat-card ${activeTab === 'leave' && viewMode === 'today' ? 'active' : ''}`}
                   onClick={() => {
-                    setActiveTab('requests');
+                    setActiveTab('leave');
                     setViewMode('today');
                   }}
                   style={{
@@ -901,14 +914,14 @@ function SuperAdminDashboard() {
                     </div>
                     <div style={{ fontSize: '32px', fontWeight: '800' }}>{stats.total}</div>
                   </div>
-                  <div style={{ fontSize: '15px', fontWeight: '600', opacity: activeTab === 'requests' && viewMode === 'today' ? 0.9 : 0.7 }}>Today Leave Requests</div>
+                  <div style={{ fontSize: '15px', fontWeight: '600', opacity: activeTab === 'leave' && viewMode === 'today' ? 0.9 : 0.7 }}>Today Leave Requests</div>
                 </div>
 
                 {/* Card 2: Pending (Matches HR Pending) */}
                 <div
-                  className={`stat-card ${activeTab === 'requests' && viewMode === 'pending' ? 'active' : ''}`}
+                  className={`stat-card ${activeTab === 'leave' && viewMode === 'pending' ? 'active' : ''}`}
                   onClick={async () => {
-                    setActiveTab('requests');
+                    setActiveTab('leave');
                     setViewMode('pending');
                     const pendingRequests = await dataService.getRequestsBySuperAdmin();
                     setRequests(pendingRequests);
@@ -935,7 +948,7 @@ function SuperAdminDashboard() {
                     </div>
                     <div style={{ fontSize: '32px', fontWeight: '800' }}>{stats.pending}</div>
                   </div>
-                  <div style={{ fontSize: '15px', fontWeight: '600', opacity: activeTab === 'requests' && viewMode === 'pending' ? 0.9 : 0.7 }}>Pending Approvals</div>
+                  <div style={{ fontSize: '15px', fontWeight: '600', opacity: activeTab === 'leave' && viewMode === 'pending' ? 0.9 : 0.7 }}>Pending Approvals</div>
                 </div>
 
                 {/* Card 3: Reports (New SVG Chart) */}
@@ -1104,7 +1117,7 @@ function SuperAdminDashboard() {
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {departmentsList.map(dept => {
-                      const deptEmployees = dataService.getAllEmployees().filter(e => e.department === dept.name);
+                      const deptEmployees = dataService.getActiveEmployees().filter(e => e.department === dept.name);
                       const isDeptExpanded = selectedDeptForView === dept.name;
 
                       return (
@@ -1276,51 +1289,48 @@ function SuperAdminDashboard() {
             )}
 
             {activeTab === 'users' && (
-              <div className="system-management" style={{ padding: '24px', paddingBottom: '100px' }}>
+              <div className="system-management" style={{ padding: '0', paddingBottom: '100px' }}>
                 <h2 style={{ marginBottom: '30px', borderBottom: '2px solid #eee', paddingBottom: '16px' }}>System Management & Settings</h2>
 
                 {/* MAIN SETTINGS MENU (Cards) */}
                 {settingsView === null && (
-                  <div className="settings-menu-list" style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '800px' }}>
+                  <div className="quick-actions-grid" style={{ maxWidth: '100% ' }}>
 
                     {/* 1. Add User Card */}
-                    <div onClick={() => setSettingsView('addUser')} className="interactive-card" style={{ display: 'flex', alignItems: 'center', padding: '24px', background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}
+                    <div onClick={() => setSettingsView('addUser')} className="interactive-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '16px', padding: '24px', background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}
                     >
-                      <div className="icon-wrapper" style={{ fontSize: '24px', background: '#e0e7ff', width: '56px', height: '56px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '20px' }}>👤</div>
+                      <div className="icon-wrapper" style={{ fontSize: '24px', background: '#e0e7ff', width: '56px', height: '56px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>👤</div>
                       <div>
                         <h3 style={{ margin: '0 0 4px 0', color: '#1e293b', fontSize: '18px' }}>Add User</h3>
                         <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>Create new employee accounts</p>
                       </div>
-                      <div style={{ marginLeft: 'auto', color: '#cbd5e1' }}>›</div>
                     </div>
 
                     {/* 2. Edit User Details Card */}
-                    <div onClick={() => setSettingsView('editUser')} className="interactive-card" style={{ display: 'flex', alignItems: 'center', padding: '24px', background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}
+                    <div onClick={() => setSettingsView('editUser')} className="interactive-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '16px', padding: '24px', background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}
                     >
-                      <div className="icon-wrapper" style={{ fontSize: '24px', background: '#dbeafe', width: '56px', height: '56px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '20px' }}>✏️</div>
+                      <div className="icon-wrapper" style={{ fontSize: '24px', background: '#dbeafe', width: '56px', height: '56px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✏️</div>
                       <div>
                         <h3 style={{ margin: '0 0 4px 0', color: '#1e293b', fontSize: '18px' }}>Edit User Details</h3>
                         <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>Update employee information</p>
                       </div>
-                      <div style={{ marginLeft: 'auto', color: '#cbd5e1' }}>›</div>
                     </div>
 
                     {/* 3. Deactivate User Card */}
-                    <div onClick={() => setSettingsView('deactivate')} className="interactive-card" style={{ display: 'flex', alignItems: 'center', padding: '24px', background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}
+                    <div onClick={() => setSettingsView('deactivate')} className="interactive-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '16px', padding: '24px', background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}
                     >
-                      <div className="icon-wrapper" style={{ fontSize: '24px', background: '#fee2e2', width: '56px', height: '56px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '20px' }}>🚫</div>
+                      <div className="icon-wrapper" style={{ fontSize: '24px', background: '#fee2e2', width: '56px', height: '56px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🚫</div>
                       <div>
                         <h3 style={{ margin: '0 0 4px 0', color: '#1e293b', fontSize: '18px' }}>Deactivate User</h3>
                         <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>Disable access for former employees</p>
                       </div>
-                      <div style={{ marginLeft: 'auto', color: '#cbd5e1' }}>›</div>
                     </div>
                   </div>
                 )}
 
                 {/* 1. Add User Form */}
                 {settingsView === 'addUser' && (
-                  <div id="add-user-section" style={{ background: 'white', padding: '32px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+                  <div id="add-user-section" style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
                     <button onClick={() => setSettingsView(null)} style={{ marginBottom: '20px', background: 'none', border: 'none', color: '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px' }}>
                       ← Back to Menu
                     </button>
@@ -1360,7 +1370,7 @@ function SuperAdminDashboard() {
                         setIsAddingUser(false);
                       }
                     }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
                         <div>
                           <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#444' }}>Name</label>
                           <input placeholder="Full Name" value={newUser.name} onChange={e => setNewUser({ ...newUser, name: e.target.value })} required style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', background: '#f9fafb' }} />
@@ -1406,13 +1416,19 @@ function SuperAdminDashboard() {
                           <select value={newUser.managerId} onChange={e => setNewUser({ ...newUser, managerId: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', background: '#f9fafb' }}>
                             <option value="">Select Person</option>
                             <optgroup label="Manager">
-                              {dataService.getAllEmployees().filter(e => e.role === 'manager').map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                              {dataService.getActiveEmployees()
+                                .filter(e => e.role === 'manager')
+                                .filter((manager, index, self) =>
+                                  index === self.findIndex(m => m.id === manager.id)
+                                )
+                                .slice(0, 1)
+                                .map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                             </optgroup>
                             <optgroup label="HR">
-                              {dataService.getAllEmployees().filter(e => e.role === 'hr').map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+                              {dataService.getActiveEmployees().filter(e => e.role === 'hr').map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
                             </optgroup>
                             <optgroup label="Super Admin">
-                              {dataService.getAllEmployees().filter(e => e.role === 'superadmin').map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                              {dataService.getActiveEmployees().filter(e => e.role === 'superadmin').map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                             </optgroup>
                           </select>
                         </div>
@@ -1426,7 +1442,7 @@ function SuperAdminDashboard() {
 
                 {/* 2. Edit User Details */}
                 {settingsView === 'editUser' && (
-                  <div id="edit-user-section" style={{ background: 'white', padding: '32px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+                  <div id="edit-user-section" style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
                     <button onClick={() => setSettingsView(null)} style={{ marginBottom: '20px', background: 'none', border: 'none', color: '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px' }}>
                       ← Back to Menu
                     </button>
@@ -1574,7 +1590,13 @@ function SuperAdminDashboard() {
                             <select value={newUser.managerId} onChange={e => setNewUser({ ...newUser, managerId: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', background: '#f9fafb' }}>
                               <option value="">Select Person</option>
                               <optgroup label="Manager">
-                                {dataService.getAllEmployees().filter(e => e.role === 'manager').map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                                {dataService.getAllEmployees()
+                                  .filter(e => e.role === 'manager')
+                                  .filter((manager, index, self) =>
+                                    index === self.findIndex(m => m.id === manager.id)
+                                  )
+                                  .slice(0, 1)
+                                  .map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                               </optgroup>
                               <optgroup label="HR">
                                 {dataService.getAllEmployees().filter(e => e.role === 'hr').map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
@@ -1595,7 +1617,7 @@ function SuperAdminDashboard() {
 
                 {/* 3. Deactivate User */}
                 {settingsView === 'deactivate' && (
-                  <div id="deactivate-section" style={{ background: 'white', padding: '32px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+                  <div id="deactivate-section" style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
                     <button onClick={() => setSettingsView(null)} style={{ marginBottom: '20px', background: 'none', border: 'none', color: '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px' }}>
                       ← Back to Menu
                     </button>
@@ -1615,7 +1637,7 @@ function SuperAdminDashboard() {
                     </div>
 
                     {selectedDeactivateDept && (
-                      <div style={{ border: '1px solid #eee', borderRadius: '8px', overflow: 'hidden' }}>
+                      <div style={{ border: '1px solid #eee', borderRadius: '8px', overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                           <thead style={{ background: '#f8f9fa' }}>
                             <tr style={{ textAlign: 'left' }}>
@@ -1626,7 +1648,7 @@ function SuperAdminDashboard() {
                             </tr>
                           </thead>
                           <tbody>
-                            {dataService.getAllEmployees().filter(e => e.department === selectedDeactivateDept).map(emp => (
+                            {dataService.getActiveEmployees().filter(e => e.department === selectedDeactivateDept).map(emp => (
                               <tr key={emp.id} style={{ borderBottom: '1px solid #eee' }}>
                                 <td style={{ padding: '12px', color: '#666' }}>{emp.id}</td>
                                 <td style={{ padding: '12px', fontWeight: '500' }}>{emp.name}</td>
@@ -1674,8 +1696,8 @@ function SuperAdminDashboard() {
             )}
 
             {activeTab === 'holiday' && (
-              <div className="holiday-management" style={{ padding: '24px', paddingBottom: '100px' }}>
-                <div id="holiday-section" style={{ background: 'white', padding: '32px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+              <div className="holiday-management" style={{ padding: '0', paddingBottom: '100px' }}>
+                <div id="holiday-section" style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
                     <span style={{ fontSize: '28px', background: '#fff7ed', padding: '10px', borderRadius: '12px' }}>📅</span>
                     <h3 style={{ margin: '0', fontSize: '22px' }}>Holiday Management</h3>
@@ -1692,14 +1714,14 @@ function SuperAdminDashboard() {
                     alert('Holiday Added Successfully!');
                     setNewHoliday({ name: '', fromDate: '', toDate: '', type: 'public', days: 0 });
                   }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '20px' }}>
                       <div>
                         <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#444' }}>From Date</label>
-                        <input type="date" required value={newHoliday.fromDate} onChange={e => setNewHoliday({ ...newHoliday, fromDate: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', background: '#f9fafb' }} />
+                        <input type="date" required value={newHoliday.fromDate} onChange={e => setNewHoliday({ ...newHoliday, fromDate: e.target.value })} style={{ width: '100%', maxWidth: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', background: '#f9fafb' }} />
                       </div>
                       <div>
                         <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#444' }}>To Date</label>
-                        <input type="date" required value={newHoliday.toDate} onChange={e => setNewHoliday({ ...newHoliday, toDate: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', background: '#f9fafb' }} />
+                        <input type="date" required value={newHoliday.toDate} onChange={e => setNewHoliday({ ...newHoliday, toDate: e.target.value })} style={{ width: '100%', maxWidth: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', background: '#f9fafb' }} />
                       </div>
                     </div>
                     <div style={{ marginBottom: '24px' }}>

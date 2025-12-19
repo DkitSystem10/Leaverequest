@@ -2,6 +2,10 @@
   margin-top: 24px;
 }
 
+.table-container {
+  min-height: 500px;
+}
+
 .request-row {
   vertical-align: top;
 }
@@ -40,7 +44,7 @@
   color: #555;
 }
 
-.employee-info-row > div {
+.employee-info-row>div {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -117,23 +121,53 @@
 
 @media (max-width: 768px) {
   .table-container {
-    overflow-x: scroll;
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scrolling on iOS */
   }
-  
+
+  /* Ensure min-width for table so it triggers scroll */
+  .table-container table {
+    min-width: 600px;
+  }
+
   .action-buttons {
     flex-direction: column;
+    width: 100%;
   }
-  
+
+  .action-buttons button {
+    width: 100%;
+    margin-bottom: 4px;
+  }
+
   .employee-details-cell {
     min-width: 200px;
   }
-  
+
   .employee-info-row {
     font-size: 11px;
   }
-  
+
   .info-label {
     min-width: 60px;
   }
 }
 
+@media (max-width: 480px) {
+
+  /* Smaller mobile adjustments */
+  .request-list {
+    margin-top: 16px;
+  }
+
+  .employee-name-row strong {
+    font-size: 14px;
+  }
+
+  .employee-id-badge {
+    font-size: 10px;
+  }
+}

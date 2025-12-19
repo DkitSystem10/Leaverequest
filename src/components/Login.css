@@ -1,11 +1,12 @@
 ﻿  .login-container {
     position: relative;
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     align-items: center;
+    justify-content: center;
     overflow-x: hidden;
     background: #f8fafc;
-    /* Light slate background */
+    padding: 2rem;
   }
 
   /* Login layout: left hero, right form */
@@ -18,12 +19,9 @@
     width: 100%;
     position: relative;
     z-index: 1;
-    grid-auto-rows: min-content;
   }
 
-  .login-grid {
-    max-height: calc(100vh - 4rem);
-  }
+  /* Removed fixed max-height to allow scrolling if needed */
 
   .login-hero {
     color: #0f172a;
@@ -637,70 +635,142 @@
     .credentials-card {
       width: 100%;
     }
+
+    /* Toggle button hidden by default (desktop) */
+    .credentials-toggle-btn {
+      display: none;
+    }
   }
 
   /* Responsive Design */
-  @media (max-width: 640px) {
+  @media (max-width: 960px) {
     .login-container {
       padding: 1rem;
+      height: auto;
+      align-items: flex-start;
     }
 
     .login-grid {
       grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-top: 2rem;
+      margin-bottom: 2rem;
     }
 
     .login-hero {
       display: none;
     }
 
-    .login-card {
-      padding: 2.5rem 1.75rem;
-      grid-column: auto;
-      grid-row: 1;
-    }
-
     .login-right {
-      grid-column: auto;
+      flex-direction: column-reverse;
+    }
+
+    .login-card {
+      grid-column: 1;
       grid-row: 1;
-      flex-direction: column;
+      max-width: 100%;
+      padding: 2rem;
     }
 
-    .login-body {
-      flex-direction: column;
+    /* Floating Toggle Button for Mobile - Top Right */
+    .credentials-toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      /* Changed to absolute to sit within container */
+      top: 1.5rem;
+      right: 1.5rem;
+      width: 48px;
+      /* Slightly smaller for top bar */
+      height: 48px;
+      border-radius: 50%;
+      background: white;
+      /* White background for top area */
+      color: #3b82f6;
+      font-size: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e2e8f0;
+      z-index: 100;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
+    .credentials-toggle-btn:active {
+      transform: scale(0.95);
+    }
+
+    .credentials-toggle-btn.active {
+      background: #eff6ff;
+      color: #ef4444;
+      transform: rotate(0deg);
+      /* No rotation needed if icon changes or just active state */
+      border-color: #fee2e2;
+    }
+
+    /* Hide Credentials Card by Default on Mobile */
     .credentials-card {
-      width: 100%;
-      margin-top: 0.75rem;
+      grid-column: 1;
+      grid-row: 2;
+      position: absolute;
+      top: 5rem;
+      /* Below the toggle button */
+      right: 1.5rem;
+      width: calc(100% - 3rem);
+      max-width: 380px;
+      max-height: 0;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 99;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      border: 1px solid #e2e8f0;
     }
 
-    .login-title {
-      font-size: 2.25rem;
-    }
-
-    .login-logo {
-      width: 70px;
-      height: 70px;
-      font-size: 2rem;
+    .credentials-card.show-mobile {
+      max-height: 70vh;
+      padding: 1.5rem;
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+      overflow-y: auto;
+      /* Allow internal scrolling if list is long */
     }
   }
 
   @media (max-width: 480px) {
+    .login-container {
+      padding: 1rem;
+    }
+
     .login-card {
-      padding: 2rem 1.5rem;
+      padding: 1.5rem;
+      border-radius: 1.5rem;
+    }
+
+    .credentials-card.show-mobile {
+      width: calc(100% - 2rem);
+      right: 1rem;
+      top: 4.5rem;
     }
 
     .login-title {
       font-size: 2rem;
-    }
-
-    .login-subtitle {
-      font-size: 0.9375rem;
     }
 
     .login-logo {
       width: 60px;
       height: 60px;
       font-size: 1.75rem;
+    }
+
+    .credentials-toggle-btn {
+      top: 1rem;
+      right: 1rem;
     }
   }

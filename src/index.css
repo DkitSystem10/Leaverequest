@@ -16,7 +16,9 @@
   --radius: 12px;
 }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -27,9 +29,14 @@ body {
   background: linear-gradient(180deg, var(--bg-start) 0%, var(--bg-end) 100%);
   min-height: 100vh;
   line-height: 1.55;
+  overflow-x: hidden;
+  /* Prevent horizontal scroll globally */
+  width: 100%;
 }
 
-::selection { background: rgba(99, 102, 241, 0.15); }
+::selection {
+  background: rgba(99, 102, 241, 0.15);
+}
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
@@ -53,5 +60,192 @@ code {
   box-shadow: 0 10px 20px rgba(99, 102, 241, 0.25);
 }
 
-.btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
-.btn-primary:active { transform: translateY(0); }
+.btn-primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* =========================================
+   GLOBAL RESPONSIVE DASHBOARD LAYOUT
+   ========================================= */
+
+/* Layout Containers */
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  background: #f8fafc;
+  font-family: 'Inter', sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.sidebar {
+  width: 280px;
+  background: white;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 50;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 280px;
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - 280px);
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 100vh;
+}
+
+.dashboard-content-wrapper {
+  padding: 40px;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Grids */
+.stats-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* Hamburger Menu Generic */
+.mobile-menu-btn {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  /* Moved to left */
+  z-index: 60;
+  /* Above sidebar */
+  width: 40px;
+  height: 40px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-size: 20px;
+}
+
+/* Mobile Overlay */
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 45;
+  /* Below sidebar (50), above headers (40) */
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mobile-overlay.active {
+  opacity: 1;
+}
+
+/* =========================================
+   MEDIA QUERIES
+   ========================================= */
+
+@media (max-width: 1024px) {
+
+  /* Sidebar handling on Tablet/Mobile */
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+  }
+
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  .mobile-overlay {
+    display: block;
+    pointer-events: none;
+  }
+
+  .mobile-overlay.active {
+    pointer-events: auto;
+  }
+
+  .dashboard-content-wrapper {
+    padding: 24px 20px;
+    padding-top: 80px;
+    /* Increased top padding to clear the button */
+  }
+
+  /* Grid adjustments */
+  .stats-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .stats-grid-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Font adjustments for mobile */
+  h1 {
+    font-size: 24px !important;
+  }
+
+  h2 {
+    font-size: 20px !important;
+  }
+
+  /* Hide certain complex columns in tables if class is added (future proofing) */
+  .hide-mobile {
+    display: none;
+  }
+
+  .dashboard-content-wrapper {
+    padding: 16px;
+    padding-top: 70px;
+  }
+}

@@ -11,10 +11,18 @@ const isSupabaseConfigured = () => {
 
 // Sample employees data (can be moved to Supabase later)
 const employees = [
-  { id: 'EMP001', name: 'John Doe', email: 'john@company.com', password: 'john123', department: 'Technology', role: 'employee', designation: 'Software Engineer', managerId: 'MGR001', status: 'active' },
-  { id: 'MGR001', name: 'Manager', email: 'manager@company.com', password: 'manager123', department: 'Manager', role: 'manager', designation: 'Manager', managerId: 'HR001', status: 'active' },
-  { id: 'HR001', name: 'HR Person', email: 'hr@company.com', password: 'hr123', department: 'HR', role: 'hr', designation: 'HR Manager', managerId: 'ADMIN', status: 'active' },
-  { id: 'ADMIN', name: 'Super Admin', email: 'super@company.com', password: 'admin123', department: 'Admin', role: 'superadmin', designation: 'System Administrator', managerId: null, status: 'active' },
+  { id: 'DM3011', name: 'Rahmath', email: 'rahmath@durkkas.com', password: 'rrr123', department: 'Marketing', role: 'employee', designation: 'Digital marketing', managerId: 'MGR002', status: 'active' },
+  { id: 'DM001', name: 'AArthi', email: 'aarthi@durkkas.com', password: 'arthi123', department: 'Marketing', role: 'employee', designation: 'DigitalMarketing', managerId: 'MGR002', status: 'active' },
+  { id: 'DI3001', name: 'Jayakumar', email: 'jayakumar@durkkas.com', password: 'jay123', department: 'Technology', role: 'employee', designation: 'Developer', managerId: 'MGR002', status: 'active' },
+  { id: 'DI3004', name: 'Mani', email: 'mani@durkkas.com', password: 'mani123', department: 'Technology', role: 'employee', designation: 'Developer', managerId: 'MGR002', status: 'active' },
+  { id: 'DI3005', name: 'Bharathi', email: 'bharathi@durkkas.com', password: 'Bharathi123', department: 'Technology', role: 'employee', designation: 'Developer', managerId: 'MGR002', status: 'active' },
+  { id: 'DI301', name: 'jay', email: 'jay@durkkas.com', password: 'jay@123', department: 'Engineering', role: 'employee', designation: 'developer', managerId: 'MGR002', status: 'active' },
+  { id: 'EMP002', name: 'Jane Smith', email: 'jane@durkkas.com', password: 'jane123', department: 'Engineering', role: 'employee', designation: 'Senior Software Engineer', managerId: 'MGR002', status: 'active' },
+  { id: 'EMP004', name: 'Alice Williams', email: 'alice@durkkas.com', password: 'alice123', department: 'Sales', role: 'employee', designation: 'Sales Representative', managerId: 'MGR002', status: 'active' },
+  { id: 'EMP003', name: 'Bob Johnson', email: 'bob@durkkas.com', password: 'bob123', department: 'Marketing', role: 'employee', designation: 'Marketing Executive', managerId: 'MGR002', status: 'active' },
+  { id: 'MGR002', name: 'Manager', email: 'manager@durkkas.com', password: 'manager123', department: 'Associates', role: 'manager', designation: 'Manager', managerId: 'HR001', status: 'active' },
+  { id: 'HR001', name: 'HR Person', email: 'hr@durkkas.com', password: 'hr123', department: 'HR', role: 'hr', designation: 'HR Manager', managerId: 'ADMIN001', status: 'active' },
+  { id: 'ADMIN001', name: 'Super Admin', email: 'admin@durkkas.com', password: 'admin123', department: 'Admin', role: 'superadmin', designation: 'System Administrator', managerId: null, status: 'active' },
 ];
 
 // Shared Holidays Data
@@ -34,16 +42,16 @@ const tnGovtHolidays = [
 
 // Sample departments data
 const departments = [
-  { id: 'DEPT001', name: 'Technology', description: 'IT and Engineering department', head: 'MGR001' },
-  { id: 'DEPT002', name: 'Education', description: 'Training and Education department', head: 'MGR001' },
-  { id: 'DEPT003', name: 'Finance', description: 'Finance and Accounts', head: 'MGR001' },
-  { id: 'DEPT004', name: 'Associates', description: 'General Associates', head: 'MGR001' },
-  { id: 'DEPT005', name: 'Intern', description: 'Internship Program', head: 'MGR001' },
+  { id: 'DEPT001', name: 'Technology', description: 'IT and Engineering department', head: 'MGR002' },
+  { id: 'DEPT002', name: 'Education', description: 'Training and Education department', head: 'MGR002' },
+  { id: 'DEPT003', name: 'Finance', description: 'Finance and Accounts', head: 'MGR002' },
+  { id: 'DEPT004', name: 'Associates', description: 'General Associates', head: 'MGR002' },
+  { id: 'DEPT005', name: 'Intern', description: 'Internship Program', head: 'MGR002' },
   { id: 'DEPT006', name: 'HR', description: 'Human Resources', head: 'HR001' },
-  { id: 'DEPT007', name: 'Sales', description: 'Sales and Marketing', head: 'MGR001' },
-  { id: 'DEPT008', name: 'Marketing', description: 'Marketing and Branding', head: 'MGR001' },
-  { id: 'DEPT009', name: 'Admin', description: 'Administration', head: 'ADMIN' },
-  { id: 'DEPT010', name: 'Manager', description: 'Management', head: 'ADMIN' }
+  { id: 'DEPT007', name: 'Sales', description: 'Sales and Marketing', head: 'MGR002' },
+  { id: 'DEPT008', name: 'Marketing', description: 'Marketing and Branding', head: 'MGR002' },
+  { id: 'DEPT009', name: 'Admin', description: 'Administration', head: 'ADMIN001' },
+  { id: 'DEPT010', name: 'Manager', description: 'Management', head: 'ADMIN001' }
 ];
 
 export const dataService = {
@@ -69,59 +77,6 @@ export const dataService = {
     }
   },
 
-  getEmployeeByEmail: async (email) => {
-    try {
-      const { data, error } = await supabase
-        .from('employees')
-        .select('*')
-        .eq('email', email)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching employee:', error);
-        return employees.find(emp => emp.email === email);
-      }
-
-      return data || employees.find(emp => emp.email === email);
-    } catch (error) {
-      console.error('Error in getEmployeeByEmail:', error);
-      return employees.find(emp => emp.email === email);
-    }
-  },
-
-  authenticateEmployee: async (email, password) => {
-    try {
-      const { data, error } = await supabase
-        .from('employees')
-        .select('*')
-        .eq('email', email)
-        .eq('password', password)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error authenticating:', error);
-        const employee = employees.find(emp => emp.email === email && emp.password === password && emp.status !== 'Deactive');
-        if (employee && employee.status === 'Deactive') return null;
-        return employee || null;
-      }
-
-      const dbEmp = data || employees.find(emp => emp.email === email && emp.password === password);
-      // Check status
-      if (dbEmp && (dbEmp.status === 'Deactive' || dbEmp.status === 'deactive' || dbEmp.status === 'deactivated' || dbEmp.status === 'Deactivated')) {
-        throw new Error('Your account has been deactivated. Please contact HR.');
-      }
-      return dbEmp || null;
-    } catch (error) {
-      console.error('Error in authenticateEmployee:', error);
-      if (error.message.includes('deactivated')) throw error;
-
-      const localEmp = employees.find(emp => emp.email === email && emp.password === password);
-      if (localEmp && (localEmp.status === 'Deactive' || localEmp.status === 'deactivated')) {
-        throw new Error('Your account has been deactivated. Please contact HR.');
-      }
-      return localEmp || null;
-    }
-  },
 
   // Authenticate by Employee Code, Department, and Password
   authenticateEmployeeByCode: async (empCode, department, password) => {
@@ -187,6 +142,10 @@ export const dataService = {
   getAllEmployees: () => {
     // Return local employees array (synchronous for backward compatibility)
     return employees;
+  },
+
+  getActiveEmployees: () => {
+    return employees.filter(emp => emp.status === 'active' || emp.status === 'Active' || !emp.status);
   },
 
   // Fetch all employees from database (async)
@@ -817,10 +776,16 @@ export const dataService = {
       let managerApproval = null;
       let hrApproval = null;
       let currentApprover = 'any';
+      let employeeRole = 'employee'; // Default role
 
       try {
         if (requestData.employeeId && isSupabaseConfigured()) {
           const emp = await dataService.getEmployeeByCode(requestData.employeeId);
+
+          // Store the employee's role
+          if (emp && emp.role) {
+            employeeRole = emp.role;
+          }
 
           // CONDITION 0: If Requester IS HR, skip manager & HR approval, go to Super Admin
           if (emp && emp.role === 'hr') {
@@ -863,7 +828,7 @@ export const dataService = {
                 .select('id')
                 .eq('employee_id', emp.managerId)
                 .eq('status', 'approved')
-                .in('type', ['leave', 'halfday'])
+                .in('type', ['leave', 'halfday', 'od'])
                 .lte('start_date', endDate)
                 .gte('end_date', startDate);
 
@@ -885,13 +850,13 @@ export const dataService = {
             const startDate = requestData.startDate;
             const endDate = requestData.endDate || requestData.startDate;
 
-            // Check if manager has approved leave overlapping the request
+            // Check if manager has approved leave/OD overlapping the request
             const { data: managerLeaves } = await supabase
               .from('requests')
               .select('id')
               .eq('employee_id', emp.managerId)
               .eq('status', 'approved')
-              .in('type', ['leave', 'halfday']) // Only leave/halfday prevents approval duties
+              .in('type', ['leave', 'halfday', 'od']) // leave/halfday/OD prevents approval duties
               .lte('start_date', endDate)
               .gte('end_date', startDate);
 
@@ -917,6 +882,7 @@ export const dataService = {
         employee_id: requestData.employeeId,
         employee_name: requestData.employeeName,
         department: requestData.department,
+        role: employeeRole, // Add role to the request
         type: requestData.type,
         leave_mode: requestData.leaveMode || null,
         no_of_days: noOfDays,
@@ -937,11 +903,31 @@ export const dataService = {
         created_at: new Date().toISOString()
       };
 
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('requests')
         .insert([requestPayload])
         .select()
         .single();
+
+      // If error is about missing 'role' column, retry without it
+      if (error && (error.message.includes("role") || error.message.includes("schema"))) {
+        console.warn('Role column error. Retrying without role field and skipping select...');
+
+        // Remove role field and retry
+        const { role, ...payloadWithoutRole } = requestPayload;
+        const retry = await supabase
+          .from('requests')
+          .insert([payloadWithoutRole]); // Removed .select() and .single()
+
+        if (retry.error) {
+          console.error('Retry failed:', retry.error);
+          throw retry.error;
+        }
+
+        // Use payload data as we generated the ID ourselves
+        data = payloadWithoutRole;
+        error = null;
+      }
 
       if (error) {
         console.error('Error creating request:', error);
@@ -960,7 +946,7 @@ export const dataService = {
   },
 
   // --- Dashboard Statistics Methods ---
-  
+
   // Get today's attendance statistics
   getTodayAttendanceStats: async () => {
     try {
@@ -976,7 +962,7 @@ export const dataService = {
 
       // Get today's requests (all types)
       const todayRequests = requests.filter(req => req.fromDate === todayStr || req.startDate === todayStr);
-      
+
       // Get employees on leave today (approved leave/halfday requests)
       const employeesOnLeaveToday = new Set();
       todayRequests.forEach(req => {
@@ -1038,14 +1024,14 @@ export const dataService = {
       allEmployees.forEach(emp => {
         if (emp.status !== 'Active' && emp.status !== 'active') return;
 
-        const hasLeave = todayRequests.some(req => 
-          req.status === 'approved' && 
+        const hasLeave = todayRequests.some(req =>
+          req.status === 'approved' &&
           (req.type === 'leave' || req.type === 'halfday') &&
           (req.employeeId === emp.id || req.employee_id === emp.id)
         );
 
-        const hasPermission = todayRequests.some(req => 
-          req.status === 'approved' && 
+        const hasPermission = todayRequests.some(req =>
+          req.status === 'approved' &&
           req.type === 'permission' &&
           (req.employeeId === emp.id || req.employee_id === emp.id)
         );
@@ -1165,7 +1151,6 @@ export const dataService = {
       const { data, error } = await supabase
         .from('requests')
         .select('*')
-        .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -1174,8 +1159,12 @@ export const dataService = {
       }
 
       return (data || []).filter(req => {
+        const s = (req.status || '').toLowerCase();
+        if (s !== 'pending') return false;
+
         const hrApproval = req.hr_approval || req.hrApproval;
-        return !hrApproval;
+        // Show if no HR approval object, OR HR approval object status is 'pending'
+        return !hrApproval || hrApproval.status === 'pending';
       }).map(req => dataService.normalizeRequest(req));
     } catch (error) {
       console.error('Error in getRequestsByHR:', error);
@@ -1214,7 +1203,7 @@ export const dataService = {
           .select('id')
           .eq('employee_id', hrId)
           .eq('status', 'approved')
-          .in('type', ['leave', 'halfday'])
+          .in('type', ['leave', 'halfday', 'od'])
           .lte('start_date', today)
           .gte('end_date', today);
         hrIsOnLeave = hrOnLeave && hrOnLeave.length > 0;
@@ -1557,19 +1546,34 @@ export const dataService = {
         };
       }
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('requests')
         .update(updateData)
-        .eq('id', requestId)
-        .select()
-        .single();
+        .eq('id', requestId); // Removed .select() and .single()
 
       if (error) {
         console.error('Error approving request:', error);
+
+        // Retry with ONLY status 'approved' if it failed (likely due to missing columns)
+        if (error.message && (error.message.includes("column") || error.message.includes("schema"))) {
+          console.warn('Retrying approval with status only...');
+          const retry = await supabase
+            .from('requests')
+            .update({ status: 'approved' })
+            .eq('id', requestId);
+
+          if (retry.error) {
+            console.error('Retry failed:', retry.error);
+            return null;
+          }
+          // Return basic success
+          return { ...request, status: 'approved' };
+        }
         return null;
       }
 
-      return data;
+      // Return local data since we know the update succeeded
+      return { ...request, ...updateData };
     } catch (error) {
       console.error('Error in approveRequest:', error);
       return null;

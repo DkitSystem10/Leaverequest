@@ -4,6 +4,7 @@ import { dataService } from '../utils/dataService';
 import RequestForm from './RequestForm';
 import RequestList from './RequestList';
 import LeaveCalendar from './LeaveCalendar';
+import Reports from './Reports';
 import './EmployeeDashboard.css';
 
 function EmployeeDashboard() {
@@ -14,6 +15,7 @@ function EmployeeDashboard() {
     const [newApprovedCount, setNewApprovedCount] = useState(0);
     const [companyHolidays, setCompanyHolidays] = useState([]);
     const [holidayAnnouncement, setHolidayAnnouncement] = useState(null);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         if (user?.id) {
@@ -84,23 +86,32 @@ function EmployeeDashboard() {
     };
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', fontFamily: "'Inter', sans-serif" }}>
+        <div className="dashboard-container">
+            {/* Mobile Overlay & Toggle */}
+            <div
+                className={`mobile-overlay ${mobileMenuOpen ? 'active' : ''}`}
+                onClick={() => setMobileMenuOpen(false)}
+            />
+            <button
+                className="mobile-menu-btn"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+                ☰
+            </button>
+
             {/* SIDEBAR */}
-            <div style={{
-                width: '280px', background: 'white', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column',
-                position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 50, boxShadow: '4px 0 24px rgba(0,0,0,0.02)'
-            }}>
+            <div className={`sidebar ${mobileMenuOpen ? 'open' : ''}`}>
                 <div style={{ padding: '32px 24px', borderBottom: '1px solid #f1f5f9' }}>
                     <h2 style={{ margin: 0, color: '#0f172a', fontSize: '24px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' }}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
                         </div>
-                        <span style={{ background: 'linear-gradient(90deg, #1e293b, #334155)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Leave Hub</span>
+                        <span style={{ background: 'linear-gradient(90deg, #1e293b, #334155)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Durkkas ERP</span>
                     </h2>
                 </div>
-                <div style={{ padding: '24px', flex: 1 }}>
+                <div style={{ padding: '24px', flex: 1, overflowY: 'auto' }}>
                     <div style={{ textTransform: 'uppercase', color: '#94a3b8', fontSize: '11px', fontWeight: '700', marginBottom: '16px', letterSpacing: '0.5px' }}>Main Menu</div>
-                    <button onClick={() => setView('welcome')} style={{
+                    <button onClick={() => { setView('welcome'); setMobileMenuOpen(false); }} style={{
                         width: '100%', padding: '14px 16px', textAlign: 'left',
                         background: view === 'welcome' ? '#eff6ff' : 'transparent',
                         color: view === 'welcome' ? '#2563eb' : '#475569',
@@ -112,7 +123,7 @@ function EmployeeDashboard() {
                         </div>
                         Home
                     </button>
-                    <button onClick={() => setView('leave-management')} style={{
+                    <button onClick={() => { setView('leave-management'); setMobileMenuOpen(false); }} style={{
                         width: '100%', padding: '14px 16px', textAlign: 'left',
                         background: view === 'leave-management' ? '#eff6ff' : 'transparent',
                         color: view === 'leave-management' ? '#2563eb' : '#475569',
@@ -125,97 +136,168 @@ function EmployeeDashboard() {
                         </div>
                         Leave Management
                     </button>
+                    <button onClick={() => { setView('reports'); setMobileMenuOpen(false); }} style={{
+                        width: '100%', padding: '14px 16px', textAlign: 'left',
+                        background: view === 'reports' ? '#eff6ff' : 'transparent',
+                        color: view === 'reports' ? '#2563eb' : '#475569',
+                        border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: '600', fontSize: '14px',
+                        display: 'flex', alignItems: 'center', gap: '12px', transition: 'all 0.2s ease',
+                        boxShadow: view === 'reports' ? '0 4px 12px rgba(37, 99, 235, 0.1)' : 'none'
+                    }}>
+                        <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        </div>
+                        Reports
+                    </button>
                 </div>
-                {/* User Info */}
+                {/* User Info & Logout */}
                 <div style={{ padding: '24px', borderTop: '1px solid #f1f5f9' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ width: '40px', height: '40px', background: '#e2e8f0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>👤</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <div style={{ width: '40px', height: '40px', background: '#e2e8f0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>👤</div>
                         <div style={{ overflow: 'hidden' }}>
                             <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name}</div>
                             <div style={{ fontSize: '12px', color: '#64748b' }}>Employee</div>
                         </div>
                     </div>
+                    <button
+                        onClick={logout}
+                        style={{
+                            width: '100%',
+                            padding: '10px',
+                            border: '1px solid #e2e8f0',
+                            background: 'white',
+                            borderRadius: '8px',
+                            color: '#ef4444',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.borderColor = '#fee2e2'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        Sign Out
+                    </button>
                 </div>
             </div>
 
             {/* MAIN CONTENT */}
-            <div style={{ flex: 1, marginLeft: '280px', display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+            <div className="main-content">
                 <div className="dashboard-header-new" style={{ margin: 0, borderRadius: 0, position: 'sticky', top: 0, zIndex: 40, borderBottom: '1px solid #e2e8f0' }}>
                     <div className="header-left">
                         <h1 className="dashboard-title">Welcome, {user.name}</h1>
                         <p className="dashboard-subtitle">Employee Dashboard</p>
                     </div>
-                    <div className="header-right">
-                        <button onClick={logout} className="logout-btn">Logout</button>
-                    </div>
+
                 </div>
 
-                <div style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+                <div className="dashboard-content-wrapper">
                     {view === 'leave-management' ? (
                         <>
 
                             {/* Blinking Leave Message Notification */}
-                            {newApprovedCount > 0 && (
-                                <div style={{
-                                    margin: '20px',
-                                    padding: '16px 24px',
-                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                    borderRadius: '12px',
-                                    boxShadow: '0 8px 20px rgba(16, 185, 129, 0.3)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    animation: 'blink 1.5s ease-in-out infinite',
-                                    border: '2px solid #34d399'
-                                }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                                        <span style={{ fontSize: '32px', animation: 'bounce 1s ease-in-out infinite' }}>✅</span>
-                                        <div>
-                                            <h3 style={{
-                                                margin: 0,
-                                                color: 'white',
-                                                fontSize: '18px',
-                                                fontWeight: 'bold',
-                                                textShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                                            }}>
-                                                🎉 New Leave Approval!
-                                            </h3>
-                                            <p style={{
-                                                margin: '4px 0 0 0',
-                                                color: '#d1fae5',
-                                                fontSize: '14px'
-                                            }}>
-                                                You have {newApprovedCount} new approved leave request{newApprovedCount > 1 ? 's' : ''}. Click "Approved Requests" to view details.
-                                            </p>
+                            {(() => {
+                                const latestApproved = [...requests]
+                                    .filter(r => r.status === 'approved')
+                                    .sort((a, b) => {
+                                        const getLatestUpdate = (req) => {
+                                            const times = [
+                                                req.superAdminApproval?.approved_at || req.superAdminApproval?.approvedAt || 0,
+                                                req.hrApproval?.approved_at || req.hrApproval?.approvedAt || 0,
+                                                req.managerApproval?.approved_at || req.managerApproval?.approvedAt || 0,
+                                                req.updated_at || 0
+                                            ];
+                                            return new Date(times.sort().reverse()[0]);
+                                        };
+                                        return getLatestUpdate(b) - getLatestUpdate(a);
+                                    })[0];
+
+                                if (!latestApproved || newApprovedCount === 0) return null;
+
+                                let approverName = 'Approver';
+                                if (latestApproved.superAdminApproval?.status === 'approved') {
+                                    approverName = latestApproved.superAdminApproval.approver_name || latestApproved.superAdminApproval.approverName || 'Super Admin';
+                                } else if (latestApproved.hrApproval?.status === 'approved') {
+                                    approverName = latestApproved.hrApproval.approver_name || latestApproved.hrApproval.approverName || 'HR';
+                                } else if (latestApproved.managerApproval?.status === 'approved') {
+                                    approverName = latestApproved.managerApproval.approver_name || latestApproved.managerApproval.approverName || 'Manager';
+                                }
+
+                                return (
+                                    <div style={{
+                                        margin: '20px',
+                                        padding: '16px 24px',
+                                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                        borderRadius: '12px',
+                                        boxShadow: '0 8px 20px rgba(16, 185, 129, 0.3)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        animation: 'blink 1.5s ease-in-out infinite',
+                                        border: '2px solid #34d399'
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                            <span style={{ fontSize: '32px', animation: 'bounce 1s ease-in-out infinite' }}>✅</span>
+                                            <div>
+                                                <h3 style={{
+                                                    margin: 0,
+                                                    color: 'white',
+                                                    fontSize: '18px',
+                                                    fontWeight: 'bold',
+                                                    textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                                }}>
+                                                    {latestApproved.type === 'od' ? '🎉 New OD Approval!' : '🎉 New Leave Approval!'}
+                                                </h3>
+                                                <p style={{
+                                                    margin: '4px 0 0 0',
+                                                    color: '#d1fae5',
+                                                    fontSize: '14px'
+                                                }}>
+                                                    {latestApproved.type === 'od'
+                                                        ? `Your OD (${latestApproved.startDate || latestApproved.start_date}) request has been approved by ${approverName}.`
+                                                        : `Your leave (${latestApproved.startDate || latestApproved.start_date}) request has been approved by ${approverName}.`
+                                                    }
+                                                </p>
+                                            </div>
                                         </div>
+                                        <button
+                                            onClick={handleApprovedClick}
+                                            style={{
+                                                background: 'white',
+                                                color: '#059669',
+                                                border: 'none',
+                                                padding: '10px 20px',
+                                                borderRadius: '8px',
+                                                fontSize: '14px',
+                                                fontWeight: 'bold',
+                                                border: 'none',
+                                                padding: '10px 20px',
+                                                borderRadius: '8px',
+                                                fontSize: '14px',
+                                                fontWeight: 'bold',
+                                                cursor: 'pointer',
+                                                boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                                                transition: 'all 0.3s'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.transform = 'scale(1.05)';
+                                                e.currentTarget.style.boxShadow = '0 6px 12px rgba(0,0,0,0.15)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.transform = 'scale(1)';
+                                                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+                                            }}
+                                        >
+                                            View Now →
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={handleApprovedClick}
-                                        style={{
-                                            background: 'white',
-                                            color: '#059669',
-                                            border: 'none',
-                                            padding: '10px 20px',
-                                            borderRadius: '8px',
-                                            fontSize: '14px',
-                                            fontWeight: 'bold',
-                                            cursor: 'pointer',
-                                            boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                                            transition: 'all 0.3s'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.transform = 'scale(1.05)';
-                                            e.currentTarget.style.boxShadow = '0 6px 12px rgba(0,0,0,0.15)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.transform = 'scale(1)';
-                                            e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
-                                        }}
-                                    >
-                                        View Now →
-                                    </button>
-                                </div>
-                            )}
+                                );
+                            })()}
 
                             {/* Holiday Announcement Banner */}
                             {holidayAnnouncement && (
@@ -425,7 +507,7 @@ function EmployeeDashboard() {
                                         {/* Company Holidays Section */}
                                         <div style={{ marginBottom: '24px', padding: '16px', background: '#ecfdf5', borderRadius: '12px', border: '1px solid #d1fae5' }}>
                                             <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#047857', display: 'flex', alignItems: 'center' }}>
-                                                <span style={{ marginRight: '8px' }}>🎉</span> Upcoming Company Holidays
+                                                <span style={{ marginRight: '8px' }}>🎉</span> Company Holidays
                                             </h3>
                                             {companyHolidays.length === 0 ? (
                                                 <p style={{ fontSize: '14px', color: '#6b7280', fontStyle: 'italic', margin: 0 }}>No holidays posted yet.</p>
@@ -447,6 +529,93 @@ function EmployeeDashboard() {
                                 )}
                             </div>
                         </>
+                    ) : view === 'reports' ? (
+                        <div style={{ padding: '32px' }}>
+                            <div style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '16px', marginBottom: '24px' }}>
+                                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: '#0f172a' }}>My Leave History</h3>
+                                <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#64748b' }}>View all your approved leaves and permissions with dates and reasons.</p>
+                            </div>
+
+                            {/* Simple Leave List */}
+                            <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                                {requests.filter(r => r.status === 'approved').length === 0 ? (
+                                    <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
+                                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>📋</div>
+                                        <p>No approved leaves or permissions yet.</p>
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        {requests
+                                            .filter(r => r.status === 'approved')
+                                            .sort((a, b) => new Date(b.start_date || b.startDate) - new Date(a.start_date || a.startDate))
+                                            .map((req, index) => {
+                                                const startDate = req.start_date || req.startDate;
+                                                const endDate = req.end_date || req.endDate;
+                                                const reason = req.reason || 'No reason provided';
+                                                const type = req.type === 'leave' ? 'Leave' : 'Permission';
+
+                                                // Format date as "DEC-16"
+                                                const formatDate = (dateStr) => {
+                                                    const date = new Date(dateStr);
+                                                    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+                                                    return `${months[date.getMonth()]}-${String(date.getDate()).padStart(2, '0')}`;
+                                                };
+
+                                                const dateRange = startDate === endDate
+                                                    ? formatDate(startDate)
+                                                    : `${formatDate(startDate)} to ${formatDate(endDate)}`;
+
+                                                return (
+                                                    <div key={index} style={{
+                                                        background: 'white',
+                                                        border: '1px solid #e2e8f0',
+                                                        borderRadius: '12px',
+                                                        padding: '20px',
+                                                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                                                        transition: 'all 0.2s',
+                                                        cursor: 'default'
+                                                    }}
+                                                        onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'}
+                                                        onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)'}
+                                                    >
+                                                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+                                                            <div style={{
+                                                                width: '48px',
+                                                                height: '48px',
+                                                                borderRadius: '12px',
+                                                                background: type === 'Leave' ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                flexShrink: 0,
+                                                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+                                                            }}>
+                                                                <span style={{ fontSize: '24px' }}>{type === 'Leave' ? '🏖️' : '⏰'}</span>
+                                                            </div>
+                                                            <div style={{ flex: 1 }}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                                                                    <h4 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#0f172a' }}>{dateRange}</h4>
+                                                                    <span style={{
+                                                                        padding: '4px 12px',
+                                                                        borderRadius: '6px',
+                                                                        fontSize: '12px',
+                                                                        fontWeight: '600',
+                                                                        background: type === 'Leave' ? '#dbeafe' : '#d1fae5',
+                                                                        color: type === 'Leave' ? '#1e40af' : '#065f46'
+                                                                    }}>{type}</span>
+                                                                </div>
+                                                                <p style={{ margin: '0', fontSize: '14px', color: '#64748b', lineHeight: '1.6' }}>
+                                                                    <strong style={{ color: '#475569' }}>Reason:</strong> {reason}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', textAlign: 'center', color: '#64748b' }}>
                             <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.5 }}>👋</div>

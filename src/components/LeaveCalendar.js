@@ -6,6 +6,7 @@ function LeaveCalendar({ user, scope = 'personal' }) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarData, setCalendarData] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [companyHolidays, setCompanyHolidays] = useState([]);
 
   useEffect(() => {
     if (user?.id) {
@@ -20,6 +21,8 @@ function LeaveCalendar({ user, scope = 'personal' }) {
 
     // Get all requests for the current month
     const requests = await dataService.getMonthlySummary(year, month + 1);
+    const holidays = await dataService.fetchHolidays();
+    setCompanyHolidays(holidays);
 
     let displayRequests = requests;
     if (scope === 'personal') {
@@ -50,13 +53,27 @@ function LeaveCalendar({ user, scope = 'personal' }) {
         const reqDate = new Date(startDate);
         const reqEndDate = new Date(endDate);
         const checkDate = new Date(dateStr);
+        reqDate.setHours(0, 0, 0, 0);
+        reqEndDate.setHours(0, 0, 0, 0);
+        checkDate.setHours(0, 0, 0, 0);
         return checkDate >= reqDate && checkDate <= reqEndDate;
+      });
+
+      const dayHolidays = holidays.filter(h => {
+        const startDate = new Date(h.fromDate);
+        const endDate = new Date(h.toDate || h.fromDate);
+        const checkDate = new Date(dateStr);
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(0, 0, 0, 0);
+        checkDate.setHours(0, 0, 0, 0);
+        return checkDate >= startDate && checkDate <= endDate;
       });
 
       currentWeek.push({
         day,
         date: dateStr,
-        requests: dayRequests
+        requests: dayRequests,
+        holidays: dayHolidays
       });
 
       if (currentWeek.length === 7) {
@@ -126,6 +143,10 @@ function LeaveCalendar({ user, scope = 'personal' }) {
           <span className="legend-color" style={{ background: '#dc3545' }}></span>
           <span>Rejected</span>
         </div>
+        <div className="legend-item">
+          <span className="legend-color" style={{ background: '#7c3aed' }}></span>
+          <span>Holiday</span>
+        </div>
       </div>
 
       <div className="calendar-grid">
@@ -146,11 +167,22 @@ function LeaveCalendar({ user, scope = 'personal' }) {
                 {dayData && (
                   <>
                     <div className="calendar-day-number">{dayData.day}</div>
-                    {dayData.requests.length > 0 && (
+                    {dayData.holidays.length > 0 && (
+                      <div className="calendar-holiday-indicator">🎉</div>
+                    )}
+                    {(dayData.requests.length > 0 || dayData.holidays.length > 0) && (
                       <div className="calendar-day-requests">
+                        {dayData.holidays.map((h, idx) => (
+                          <div
+                            key={`h-${idx}`}
+                            className="calendar-request-dot"
+                            style={{ background: '#7c3aed' }}
+                            title={`Holiday: ${h.name}`}
+                          ></div>
+                        ))}
                         {dayData.requests.map((req, idx) => (
                           <div
-                            key={idx}
+                            key={`r-${idx}`}
                             className="calendar-request-dot"
                             style={{ background: getStatusColor(req.status) }}
                             title={`${req.type} - ${req.status}`}
@@ -168,44 +200,64 @@ function LeaveCalendar({ user, scope = 'personal' }) {
 
       {selectedDate && (
         <div className="calendar-details">
-          <h3>Requests for {formatDate(selectedDate)}</h3>
-          {calendarData.flat().find(d => d?.date === selectedDate)?.requests.length > 0 ? (
-            <div className="selected-date-requests">
-              {calendarData.flat().find(d => d?.date === selectedDate)?.requests.map(req => {
-                const reqType = req.type;
-                const startDate = req.start_date || req.startDate;
-                const endDate = req.end_date || req.endDate;
-                const startTime = req.start_time || req.startTime;
-                const endTime = req.end_time || req.endTime;
-                const reqStatus = req.status;
-                const reason = req.reason;
+          <h3>Details for {formatDate(selectedDate)}</h3>
+          {(() => {
+            const dayData = calendarData.flat().find(d => d?.date === selectedDate);
+            const hasActivity = (dayData?.requests?.length > 0 || dayData?.holidays?.length > 0);
 
-                return (
-                  <div key={req.id} className="request-detail-card">
+            if (!hasActivity) return <div className="no-requests">No requests or holidays for this date</div>;
+
+            return (
+              <div className="selected-date-requests">
+                {/* Holidays first */}
+                {dayData.holidays.map(h => (
+                  <div key={`h-${h.id}`} className="request-detail-card" style={{ borderLeft: '4px solid #7c3aed' }}>
                     <div className="request-detail-header">
-                      <strong>{req.id}</strong>
-                      <span className={`badge badge-${reqStatus}`}>{reqStatus}</span>
+                      <strong>🎉 Company Holiday</strong>
+                      <span className="badge" style={{ background: '#f5f3ff', color: '#7c3aed' }}>{h.type}</span>
                     </div>
                     <div className="request-detail-info">
-                      {scope === 'team' && (
-                        <div><strong>Employee:</strong> {req.employee_name || req.employeeName || req.employee_id}</div>
-                      )}
-                      <div><strong>Type:</strong> {reqType}</div>
-                      {reqType === 'leave' && (
-                        <div><strong>Dates:</strong> {formatDate(startDate)} to {formatDate(endDate)}</div>
-                      )}
-                      {reqType === 'permission' && (
-                        <div><strong>Time:</strong> {startTime} - {endTime}</div>
-                      )}
-                      <div><strong>Reason:</strong> {reason}</div>
+                      <div style={{ fontSize: '16px', fontWeight: '700', color: '#7c3aed', marginBottom: '4px' }}>{h.name}</div>
+                      <div><strong>Duration:</strong> {formatDate(h.fromDate)} {h.toDate && h.toDate !== h.fromDate && ` to ${formatDate(h.toDate)}`}</div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="no-requests">No requests for this date</div>
-          )}
+                ))}
+
+                {/* Requests */}
+                {dayData.requests.map(req => {
+                  const reqType = req.type;
+                  const startDate = req.start_date || req.startDate;
+                  const endDate = req.end_date || req.endDate;
+                  const startTime = req.start_time || req.startTime;
+                  const endTime = req.end_time || req.endTime;
+                  const reqStatus = req.status;
+                  const reason = req.reason;
+
+                  return (
+                    <div key={req.id} className="request-detail-card">
+                      <div className="request-detail-header">
+                        <strong>{req.id}</strong>
+                        <span className={`badge badge-${reqStatus}`}>{reqStatus}</span>
+                      </div>
+                      <div className="request-detail-info">
+                        {scope === 'team' && (
+                          <div><strong>Employee:</strong> {req.employee_name || req.employeeName || req.employee_id}</div>
+                        )}
+                        <div><strong>Type:</strong> {reqType}</div>
+                        {reqType === 'leave' && (
+                          <div><strong>Dates:</strong> {formatDate(startDate)} to {formatDate(endDate)}</div>
+                        )}
+                        {reqType === 'permission' && (
+                          <div><strong>Time:</strong> {startTime} - {endTime}</div>
+                        )}
+                        <div><strong>Reason:</strong> {reason}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>

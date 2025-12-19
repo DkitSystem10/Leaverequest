@@ -9,51 +9,16 @@ function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showMobileCredentials, setShowMobileCredentials] = useState(false);
   const { login } = useAuth();
 
   // Available departments
-  const departments = ['Technology', 'Education', 'Finance', 'Associates', 'Intern', 'HR', 'Admin', 'Manager'];
+  const departments = ['Technology', 'Education', 'Finance', 'Associates', 'Intern', 'HR', 'Sales', 'Marketing', 'Admin', 'Manager'];
 
-  // Department mapping based on first 2 characters of employee code
-  const getDepartmentFromCode = (code) => {
-    if (!code || code.length < 2) return '';
-    const prefix = code.substring(0, 2).toUpperCase();
 
-    const departmentMap = {
-      'TE': 'Technology',
-      'ED': 'Education',
-      'FI': 'Finance',
-      'AS': 'Associates',
-      'TC': 'Technology',
-      'EC': 'Education',
-      'FC': 'Finance',
-      'AC': 'Associates',
-      'EN': 'Technology',
-      'MK': 'Associates',
-      'SL': 'Associates',
-      'HR': 'HR',
-      'IN': 'Intern',
-      'OP': 'Technology',
-      'IT': 'Technology',
-      'AD': 'Admin',     // Admin -> Admin
-      'MG': 'Manager',   // Manager -> Manager
-      'EM': 'Technology',
-      'MA': 'Associates',
-      'SA': 'Associates',
-      'OT': 'Technology'
-    };
-
-    return departmentMap[prefix] || '';
-  };
-
-  // Auto-fill department when employee code changes
+  // Update employee code
   const handleEmpCodeChange = (e) => {
-    const code = e.target.value.toUpperCase();
-    setEmpCode(code);
-    const autoDepartment = getDepartmentFromCode(code);
-    if (autoDepartment) {
-      setDepartment(autoDepartment);
-    }
+    setEmpCode(e.target.value.toUpperCase());
   };
 
   const handleSubmit = async (e) => {
@@ -87,7 +52,10 @@ function Login() {
   };
 
   // Get all employees and group them by role
-  const allEmployees = dataService.getAllEmployees();
+  const allEmployees = dataService.getAllEmployees().filter(emp =>
+    !emp.status || emp.status.toLowerCase() === 'active'
+  );
+
   const employeesByRole = {
     employee: allEmployees.filter(emp => emp.role === 'employee'),
     manager: allEmployees.filter(emp => emp.role === 'manager'),
@@ -105,7 +73,16 @@ function Login() {
   return (
     <div className="login-container">
       <div className="login-grid">
-        <div className="credentials-card">
+        {/* Mobile Toggle Button for Credentials */}
+        <button
+          className={`credentials-toggle-btn ${showMobileCredentials ? 'active' : ''}`}
+          onClick={() => setShowMobileCredentials(!showMobileCredentials)}
+          title="Show Demo Credentials"
+        >
+          {showMobileCredentials ? '✕' : '🔑'}
+        </button>
+
+        <div className={`credentials-card ${showMobileCredentials ? 'show-mobile' : ''}`}>
           <div className="credentials-header">
             <h2 className="demo-title">🔑 Demo Credentials</h2>
             <p className="demo-subtitle">Use any of these accounts to login</p>
@@ -161,7 +138,7 @@ function Login() {
           <div className="login-card">
             <div className="login-header">
               <div className="login-logo">📋</div>
-              <h1 className="login-title">LeaveHub</h1>
+              <h1 className="login-title">Durkkas ERP</h1>
               <p className="login-subtitle">Leave & Permission Management System</p>
             </div>
 
@@ -181,9 +158,6 @@ function Login() {
                     autoFocus
                     style={{ textTransform: 'uppercase' }}
                   />
-                  <small style={{ color: '#666', fontSize: '12px', marginTop: '4px', display: 'block' }}>
-                    Department will be auto-filled based on code prefix
-                  </small>
                 </div>
 
                 <div className="form-group">
@@ -196,7 +170,6 @@ function Login() {
                     value={department}
                     onChange={(e) => setDepartment(e.target.value)}
                     style={{
-                      background: department ? '#f0f9ff' : '#fff',
                       cursor: 'pointer'
                     }}
                   >
@@ -205,9 +178,6 @@ function Login() {
                       <option key={dept} value={dept}>{dept}</option>
                     ))}
                   </select>
-                  <small style={{ color: '#666', fontSize: '12px', marginTop: '4px', display: 'block' }}>
-                    Auto-filled from Employee Code (can be changed if needed)
-                  </small>
                 </div>
 
                 <div className="form-group">

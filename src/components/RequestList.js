@@ -42,7 +42,7 @@ function RequestList({ requests, userRole, onAction, itemsPerPage: propItemsPerP
       setCurrentPage(1);
     }
   }, [requests.length, currentPage, totalPages, itemsPerPage]);
-  
+
   // Reset to page 1 when itemsPerPage changes (switching between views)
   useEffect(() => {
     setCurrentPage(1);
@@ -61,6 +61,7 @@ function RequestList({ requests, userRole, onAction, itemsPerPage: propItemsPerP
   const formatDateTime = (dateString) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid Date';
     return date.toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -70,6 +71,8 @@ function RequestList({ requests, userRole, onAction, itemsPerPage: propItemsPerP
       hour12: true
     });
   };
+
+  /* Removed duplicate block */
 
   const getStatusBadge = (status) => {
     const statusClass = `badge badge-${status}`;
@@ -86,7 +89,7 @@ function RequestList({ requests, userRole, onAction, itemsPerPage: propItemsPerP
   const getPageNumbers = () => {
     const pages = [];
     const maxVisible = 12; // Show max 12 page numbers
-    
+
     if (totalPages <= maxVisible) {
       // Show all pages if total is less than max
       for (let i = 1; i <= totalPages; i++) {
@@ -115,7 +118,7 @@ function RequestList({ requests, userRole, onAction, itemsPerPage: propItemsPerP
         }
       }
     }
-    
+
     return pages;
   };
 
@@ -138,6 +141,8 @@ function RequestList({ requests, userRole, onAction, itemsPerPage: propItemsPerP
               <th>Date & Time</th>
               <th>Name</th>
               <th>Leave Date</th>
+              <th>Reason</th>
+              {(userRole === 'superadmin' || userRole === 'hr') && <th>Approved By</th>}
               {userRole !== 'employee' && <th>Approve/Reject</th>}
             </tr>
           </thead>
@@ -160,10 +165,10 @@ function RequestList({ requests, userRole, onAction, itemsPerPage: propItemsPerP
                       {formatDateTime(request.created_at || request.createdAt)}
                     </div>
                   </td>
-                  
+
                   {/* Name (Clickable) */}
                   <td>
-                    <div 
+                    <div
                       onClick={() => setSelectedRequest(request)}
                       style={{
                         cursor: 'pointer',
@@ -176,10 +181,10 @@ function RequestList({ requests, userRole, onAction, itemsPerPage: propItemsPerP
                       {request.employeeName} ({request.employeeId})
                     </div>
                   </td>
-                  
+
                   {/* Leave Date */}
                   <td>
-                    {request.type === 'leave' ? (
+                    {(request.type === 'leave' || request.type === 'od') ? (
                       <div>
                         <div style={{ fontWeight: '500' }}>{formatDate(request.startDate)}</div>
                         {request.endDate !== request.startDate && (
@@ -187,6 +192,17 @@ function RequestList({ requests, userRole, onAction, itemsPerPage: propItemsPerP
                             to {formatDate(request.endDate)}
                           </div>
                         )}
+                        <div style={{ fontSize: '11px', fontWeight: '700', marginTop: '4px' }}>
+                          <span style={{
+                            background: request.type === 'od' ? '#fef3c7' : (request.leaveMode === 'casual' ? '#ecfdf5' : '#fef2f2'),
+                            color: request.type === 'od' ? '#92400e' : (request.leaveMode === 'casual' ? '#065f46' : '#991b1b'),
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            textTransform: 'uppercase'
+                          }}>
+                            {request.type === 'od' ? 'On Duty' : (request.leaveMode === 'casual' ? 'Casual' : 'Unpaid')}
+                          </span>
+                        </div>
                       </div>
                     ) : request.type === 'halfday' ? (
                       <div>
@@ -204,37 +220,155 @@ function RequestList({ requests, userRole, onAction, itemsPerPage: propItemsPerP
                       </div>
                     )}
                   </td>
-                  
+
+                  {/* Reason */}
+                  <td>
+                    <div style={{ maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#666' }} title={request.reason}>
+                      {request.reason}
+                    </div>
+                  </td>
+
+                  {/* Approved By */}
+                  {(userRole === 'superadmin' || userRole === 'hr') && (
+                    <td>
+                      {(() => {
+                        const hasManagerApproved = request.managerApproval || request.manager_approval;
+                        const hasHrApproved = request.hrApproval || request.hr_approval;
+                        const hasSuperAdminApproved = request.superAdminApproval || request.super_admin_approval;
+
+                        const renderApproval = (label, color, bg, approvalObj) => (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span style={{ color, fontSize: '12px', fontWeight: '600', background: bg, padding: '4px 8px', borderRadius: '6px' }}>
+                              {label}
+                            </span>
+                            {approvalObj && (approvalObj.approved_at || approvalObj.approvedAt) && (
+                              <span style={{ fontSize: '11px', color: '#64748b' }}>
+                                {formatDateTime(approvalObj.approved_at || approvalObj.approvedAt)}
+                              </span>
+                            )}
+                          </div>
+                        );
+
+                        if (hasSuperAdminApproved && hasSuperAdminApproved.status !== 'bypassed') {
+                          return renderApproval('✓ Super Admin', '#7c3aed', '#f5f3ff', hasSuperAdminApproved);
+                        }
+                        if (hasHrApproved && hasHrApproved.status !== 'bypassed') {
+                          return renderApproval('✓ HR', '#059669', '#ecfdf5', hasHrApproved);
+                        }
+                        if (hasManagerApproved && hasManagerApproved.status !== 'bypassed') {
+                          return renderApproval('✓ Manager', '#2563eb', '#eff6ff', hasManagerApproved);
+                        }
+                        return <span style={{ color: '#94a3b8', fontSize: '12px' }}>-</span>;
+                      })()}
+                    </td>
+                  )}
+
                   {/* Approve/Reject */}
                   {userRole !== 'employee' && (
                     <td>
                       {request.status !== 'rejected' && (
                         <>
                           {/* Show buttons if current user role hasn't approved yet */}
-                          {((userRole === 'manager' && !(request.managerApproval || request.manager_approval)) ||
-                            (userRole === 'hr' && !(request.hrApproval || request.hr_approval)) ||
-                            (userRole === 'superadmin' && !(request.superAdminApproval || request.super_admin_approval))) ? (
-                            <div className="action-buttons">
-                              <button
-                                className="btn btn-success"
-                                style={{ padding: '6px 12px', fontSize: '14px', marginRight: '8px' }}
-                                onClick={() => onAction && onAction(request.id, 'approve')}
-                              >
-                                Approve
-                              </button>
-                              <button
-                                className="btn btn-danger"
-                                style={{ padding: '6px 12px', fontSize: '14px' }}
-                                onClick={() => setShowRejectFor(prev => (prev === request.id ? null : request.id))}
-                              >
-                                Reject
-                              </button>
-                            </div>
-                          ) : (
-                            <span style={{ color: '#28a745', fontSize: '12px', fontWeight: '600' }}>
-                              ✓ Approved
-                            </span>
-                          )}
+                          {/* Show buttons logic */}
+                          {(() => {
+                            // Get role from request OR fallback to employee details
+                            const empId = request.employee_id || request.employeeId;
+                            const empDetails = employeeDetailsCache[empId] || employees.find(e => e.id === empId);
+                            const fallbackRole = empDetails ? empDetails.role : '';
+
+                            const employeeRole = (request.role || request.employeeRole || fallbackRole || '').toLowerCase();
+                            const isManagerRequest = employeeRole === 'manager';
+                            const isHrRequest = employeeRole === 'hr';
+
+                            const hasManagerApproved = request.managerApproval || request.manager_approval;
+                            const hasHrApproved = request.hrApproval || request.hr_approval;
+                            const hasSuperAdminApproved = request.superAdminApproval || request.super_admin_approval;
+
+                            let showButtons = false;
+
+                            if (userRole === 'manager') {
+                              // Manager approves Employees
+                              if (!hasManagerApproved) showButtons = true;
+                            } else if (userRole === 'hr') {
+                              // HR approves Managers
+                              if (isManagerRequest && !hasHrApproved) showButtons = true;
+                            } else if (userRole === 'superadmin') {
+                              // Super Admin approves HR
+                              if (isHrRequest && !hasSuperAdminApproved) showButtons = true;
+                            }
+
+                            if (showButtons) {
+                              return (
+                                <div className="action-buttons">
+                                  <button
+                                    className="btn btn-success"
+                                    style={{ padding: '6px 12px', fontSize: '14px', marginRight: '8px' }}
+                                    onClick={() => onAction && onAction(request.id, 'approve')}
+                                  >
+                                    Approve
+                                  </button>
+                                  <button
+                                    className="btn btn-danger"
+                                    style={{ padding: '6px 12px', fontSize: '14px' }}
+                                    onClick={() => setShowRejectFor(prev => (prev === request.id ? null : request.id))}
+                                  >
+                                    Reject
+                                  </button>
+                                </div>
+                              );
+                            } else {
+                              // Status display when no buttons
+
+                              // Helper to render Approved status with time
+                              const renderApproved = (label, color, bg, approvalObj) => (
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
+                                  <span style={{ color, fontSize: '12px', fontWeight: '600', background: bg, padding: '4px 8px', borderRadius: '6px' }}>
+                                    {label}
+                                  </span>
+                                  {approvalObj && (approvalObj.approved_at || approvalObj.approvedAt) && (
+                                    <span style={{ fontSize: '11px', color: '#64748b' }}>
+                                      {formatDateTime(approvalObj.approved_at || approvalObj.approvedAt)}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+
+                              // Super Admin Approval
+                              if (hasSuperAdminApproved && hasSuperAdminApproved.status !== 'bypassed') {
+                                return renderApproved('✓ Approved by Super Admin', '#7c3aed', '#f5f3ff', hasSuperAdminApproved);
+                              }
+                              // HR Approval
+                              if (hasHrApproved && hasHrApproved.status !== 'bypassed') {
+                                return renderApproved('✓ Approved by HR', '#059669', '#ecfdf5', hasHrApproved);
+                              }
+                              // Manager Approval
+                              if (hasManagerApproved && hasManagerApproved.status !== 'bypassed') {
+                                return renderApproved('✓ Approved by Manager', '#2563eb', '#eff6ff', hasManagerApproved);
+                              }
+
+                              // Pending States
+                              if (isHrRequest) {
+                                return (
+                                  <span style={{ color: '#d97706', fontSize: '12px', fontWeight: '600', background: '#fffbeb', padding: '4px 8px', borderRadius: '6px' }}>
+                                    ⏳ Pending Super Admin
+                                  </span>
+                                );
+                              }
+                              if (isManagerRequest) {
+                                return (
+                                  <span style={{ color: '#d97706', fontSize: '12px', fontWeight: '600', background: '#fffbeb', padding: '4px 8px', borderRadius: '6px' }}>
+                                    ⏳ Pending HR
+                                  </span>
+                                );
+                              }
+                              // Regular employee pending
+                              return (
+                                <span style={{ color: '#d97706', fontSize: '12px', fontWeight: '600', background: '#fffbeb', padding: '4px 8px', borderRadius: '6px' }}>
+                                  ⏳ Pending Manager
+                                </span>
+                              );
+                            }
+                          })()}
 
                           {showRejectFor === request.id && (
                             <div style={{ marginTop: '12px', background: '#fff5f5', padding: '16px', borderRadius: '12px', border: '2px solid #feb2b2' }}>
@@ -287,9 +421,14 @@ function RequestList({ requests, userRole, onAction, itemsPerPage: propItemsPerP
                         </>
                       )}
                       {request.status === 'rejected' && (
-                        <span style={{ color: '#dc3545', fontSize: '12px', fontWeight: '600' }}>
-                          Rejected
-                        </span>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
+                          <span style={{ color: '#dc3545', fontSize: '12px', fontWeight: '600', background: '#fef2f2', padding: '4px 8px', borderRadius: '6px' }}>
+                            Rejected
+                          </span>
+                          <span style={{ fontSize: '11px', color: '#64748b' }}>
+                            {formatDateTime(request.updated_at || request.updatedAt)}
+                          </span>
+                        </div>
                       )}
                     </td>
                   )}
@@ -321,9 +460,11 @@ function RequestList({ requests, userRole, onAction, itemsPerPage: propItemsPerP
             maxWidth: '800px',
             width: '100%',
             maxHeight: '90vh',
-            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
             boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-            position: 'relative'
+            position: 'relative',
+            overflow: 'hidden'
           }} onClick={(e) => e.stopPropagation()}>
             {/* Modal Header */}
             <div style={{
@@ -334,7 +475,8 @@ function RequestList({ requests, userRole, onAction, itemsPerPage: propItemsPerP
               borderBottom: '2px solid #f0f0f0',
               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
               color: 'white',
-              borderRadius: '16px 16px 0 0'
+              borderRadius: '16px 16px 0 0',
+              flexShrink: 0
             }}>
               <h3 style={{ margin: 0, fontSize: '20px' }}>Full Request Details</h3>
               <button
@@ -358,7 +500,7 @@ function RequestList({ requests, userRole, onAction, itemsPerPage: propItemsPerP
             </div>
 
             {/* Modal Body */}
-            <div style={{ padding: '24px' }}>
+            <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
               {(() => {
                 const req = selectedRequest;
                 const empId = req.employee_id || req.employeeId;
@@ -392,14 +534,18 @@ function RequestList({ requests, userRole, onAction, itemsPerPage: propItemsPerP
                       <strong style={{ color: '#667eea' }}>Request Type:</strong>
                       <div style={{ marginTop: '4px' }}>
                         <span className="badge" style={{
-                          background: req.type === 'leave' ? '#e3f2fd' : req.type === 'halfday' ? '#fff3e0' : '#f3e5f5',
-                          color: req.type === 'leave' ? '#1976d2' : req.type === 'halfday' ? '#f57c00' : '#7b1fa2',
+                          background: req.type === 'leave' ? '#e3f2fd' : req.type === 'halfday' ? '#fff3e0' : req.type === 'od' ? '#fef3c7' : '#f3e5f5',
+                          color: req.type === 'leave' ? '#1976d2' : req.type === 'halfday' ? '#f57c00' : req.type === 'od' ? '#92400e' : '#7b1fa2',
                           padding: '4px 12px',
                           borderRadius: '12px',
                           fontSize: '13px',
                           fontWeight: '600'
                         }}>
-                          {req.type}
+                          {req.type === 'leave' ? (req.leaveMode === 'casual' ? 'Casual Leave' : 'Unpaid Leave')
+                            : req.type === 'halfday' ? 'Half Day Leave'
+                              : req.type === 'permission' ? 'Permission'
+                                : req.type === 'od' ? 'On Duty (OD)'
+                                  : req.type}
                         </span>
                       </div>
                     </div>
@@ -408,7 +554,7 @@ function RequestList({ requests, userRole, onAction, itemsPerPage: propItemsPerP
                     <div>
                       <strong style={{ color: '#667eea' }}>Leave Date/Time:</strong>
                       <div style={{ marginTop: '8px', padding: '12px', background: '#f8f9fa', borderRadius: '8px' }}>
-                        {req.type === 'leave' ? (
+                        {(req.type === 'leave' || req.type === 'od') ? (
                           <div>
                             <div><strong>Start:</strong> {formatDate(req.startDate)}</div>
                             {req.endDate !== req.startDate && (
@@ -457,38 +603,85 @@ function RequestList({ requests, userRole, onAction, itemsPerPage: propItemsPerP
                     {/* Status */}
                     <div>
                       <strong style={{ color: '#667eea' }}>Status:</strong>
-                      <div style={{ marginTop: '4px' }}>{getStatusBadge(req.status)}</div>
+                      <div style={{ marginTop: '4px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                        {getStatusBadge(req.status)}
+
+                        {/* Display Rejection Reason Here */}
+                        {req.status === 'rejected' && (() => {
+                          const reason = (req.managerApproval || req.manager_approval)?.reason ||
+                            (req.hrApproval || req.hr_approval)?.reason ||
+                            (req.superAdminApproval || req.super_admin_approval)?.reason;
+
+                          if (reason) {
+                            return (
+                              <div style={{ fontSize: '13px', color: '#b91c1c', background: '#fef2f2', padding: '4px 10px', borderRadius: '6px', border: '1px solid #fecaca', maxWidth: '300px' }}>
+                                <strong>Reason:</strong> {reason}
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </div>
                     </div>
 
                     {/* Approval Status */}
                     <div>
                       <strong style={{ color: '#667eea' }}>Approval Status:</strong>
                       <div style={{ marginTop: '8px', padding: '12px', background: '#f8f9fa', borderRadius: '8px' }}>
-                        {(req.managerApproval || req.manager_approval) && 
-                         (req.managerApproval || req.manager_approval).status !== 'bypassed' && (
-                          <div style={{ marginBottom: '8px' }}>
-                            <strong>Manager:</strong> Approved by {(req.managerApproval || req.manager_approval).approver_name || (req.managerApproval || req.manager_approval).approverName}
-                          </div>
-                        )}
-                        {(req.hrApproval || req.hr_approval) && 
-                         (req.hrApproval || req.hr_approval).status !== 'bypassed' && (
-                          <div style={{ marginBottom: '8px' }}>
-                            <strong>HR:</strong> Approved by {(req.hrApproval || req.hr_approval).approver_name || (req.hrApproval || req.hr_approval).approverName}
-                          </div>
-                        )}
-                        {req.superAdminApproval || req.super_admin_approval ? (
-                          <div>
-                            <strong>Super Admin:</strong> Approved by {(req.superAdminApproval || req.super_admin_approval).approver_name || (req.superAdminApproval || req.super_admin_approval).approverName}
-                          </div>
-                        ) : null}
+                        {(() => {
+                          const managerApp = req.managerApproval || req.manager_approval;
+                          const hrApp = req.hrApproval || req.hr_approval;
+                          const saApp = req.superAdminApproval || req.super_admin_approval;
+
+                          const renderApprovalLine = (role, app) => {
+                            const isRejected = app.status === 'rejected';
+                            const statusText = isRejected ? 'Rejected' : 'Approved';
+                            const statusColor = isRejected ? '#dc2626' : '#1e293b';
+                            const date = app.rejected_at || app.rejectedAt || app.approved_at || app.approvedAt;
+
+                            return (
+                              <div style={{ marginBottom: '8px', borderBottom: '1px dashed #e2e8f0', paddingBottom: '8px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
+                                  <div>
+                                    <strong>{role}:</strong>
+                                    <span style={{ color: statusColor, fontWeight: isRejected ? '600' : '400', marginLeft: '4px' }}>
+                                      {statusText} by {app.approver_name || app.approverName}
+                                    </span>
+                                    {date && (
+                                      <span style={{ color: '#64748b', fontSize: '13px', marginLeft: '6px' }}>
+                                        on {formatDateTime(date)}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          };
+
+                          return (
+                            <>
+                              {managerApp && managerApp.status !== 'bypassed' && renderApprovalLine('Manager', managerApp)}
+                              {hrApp && hrApp.status !== 'bypassed' && renderApprovalLine('HR', hrApp)}
+                              {saApp && renderApprovalLine('Super Admin', saApp)}
+
+                              {!managerApp && !hrApp && !saApp && req.status !== 'rejected' && (
+                                <div style={{ fontStyle: 'italic', color: '#94a3b8' }}>No approvals yet</div>
+                              )}
+
+                              {req.status === 'rejected' && !managerApp?.reason && !hrApp?.reason && !saApp?.reason && (
+                                <div style={{ color: '#dc2626', fontWeight: '600' }}>Request Rejected</div>
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
                     </div>
 
                     {/* Created At */}
                     <div>
                       <strong style={{ color: '#667eea' }}>Request Created:</strong>
-                      <div style={{ marginTop: '4px', fontSize: '14px' }}>
-                        {formatDateTime(req.created_at || req.createdAt)}
+                      <div style={{ marginTop: '4px', fontSize: '14px', color: '#1e293b' }}>
+                        {formatDateTime(req.created_at || req.createdAt || req.requested_at || req.timestamp || req.date)}
                       </div>
                     </div>
                   </div>
