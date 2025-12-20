@@ -34,6 +34,7 @@ function RequestForm({ user, onRequestSubmitted, onCloseSuccess, requestType = '
   const [successMessage, setSuccessMessage] = useState('');
   const [casualLeaveAvailable, setCasualLeaveAvailable] = useState(true);
   const [casualLeaveMessage, setCasualLeaveMessage] = useState('');
+  const [weekOffMessage, setWeekOffMessage] = useState('');
 
   useEffect(() => {
     // Load all employees for alternative employee selection
@@ -113,6 +114,19 @@ function RequestForm({ user, onRequestSubmitted, onCloseSuccess, requestType = '
   }, [formData.alternativeEmployeeId, formData.startDate, formData.endDate, formData.startTime, formData.endTime, formData.halfDaySession, formData.type]);
 
   useEffect(() => {
+    // Check for Week Off (Sunday)
+    let message = '';
+    const isSunday = (dateStr) => {
+      if (!dateStr) return false;
+      const date = new Date(dateStr);
+      return date.getDay() === 0;
+    };
+
+    if (isSunday(formData.startDate) || (formData.type !== 'halfday' && isSunday(formData.endDate))) {
+      message = 'Week Off';
+    }
+    setWeekOffMessage(message);
+
     // Calculate number of days when start and end dates are selected
     if ((formData.type === 'leave' || formData.type === 'od') && formData.startDate && formData.endDate) {
       const start = new Date(formData.startDate);
@@ -476,7 +490,7 @@ function RequestForm({ user, onRequestSubmitted, onCloseSuccess, requestType = '
 
       <div className="form-group">
         <label className="form-label">Request Type *</label>
-        <div className="radio-group" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+        <div className="radio-group">
           <label className={`radio-label ${!casualLeaveAvailable ? 'disabled-option' : ''}`} style={{ opacity: !casualLeaveAvailable ? 0.6 : 1, cursor: !casualLeaveAvailable ? 'not-allowed' : 'pointer' }}>
             <input
               type="radio"
@@ -615,6 +629,25 @@ function RequestForm({ user, onRequestSubmitted, onCloseSuccess, requestType = '
           </div>
         )}
       </div>
+
+      {weekOffMessage && (
+        <div className="form-group">
+          <div style={{
+            padding: '10px',
+            background: '#fee2e2',
+            borderRadius: '6px',
+            border: '1px solid #ef4444',
+            color: '#b91c1c',
+            fontSize: '14px',
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            📅 {weekOffMessage}
+          </div>
+        </div>
+      )}
 
       {(formData.type === 'leave' || formData.type === 'od') && calculatedDays > 0 && (
         <div className="form-group">

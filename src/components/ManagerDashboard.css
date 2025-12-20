@@ -200,3 +200,33 @@
     text-shadow: 0 0 0 rgba(16, 185, 129, 0);
   }
 }
+
+/* ====== RESPONSIVE LAYOUT STYLES ====== */
+
+.apply-leave-section {
+  padding: 32px;
+}
+
+.section-header {
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+  .apply-leave-section {
+    padding: 16px;
+  }
+
+  .section-header {
+    margin-bottom: 16px;
+  }
+
+  .section-header h3 {
+    font-size: 18px !important;
+  }
+
+  .section-header p {
+    font-size: 13px !important;
+  }
+}

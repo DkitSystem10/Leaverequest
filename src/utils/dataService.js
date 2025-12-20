@@ -11,18 +11,18 @@ const isSupabaseConfigured = () => {
 
 // Sample employees data (can be moved to Supabase later)
 const employees = [
-  { id: 'DM3011', name: 'Rahmath', email: 'rahmath@durkkas.com', password: 'rrr123', department: 'Marketing', role: 'employee', designation: 'Digital marketing', managerId: 'MGR002', status: 'active' },
-  { id: 'DM001', name: 'AArthi', email: 'aarthi@durkkas.com', password: 'arthi123', department: 'Marketing', role: 'employee', designation: 'DigitalMarketing', managerId: 'MGR002', status: 'active' },
-  { id: 'DI3001', name: 'Jayakumar', email: 'jayakumar@durkkas.com', password: 'jay123', department: 'Technology', role: 'employee', designation: 'Developer', managerId: 'MGR002', status: 'active' },
-  { id: 'DI3004', name: 'Mani', email: 'mani@durkkas.com', password: 'mani123', department: 'Technology', role: 'employee', designation: 'Developer', managerId: 'MGR002', status: 'active' },
-  { id: 'DI3005', name: 'Bharathi', email: 'bharathi@durkkas.com', password: 'Bharathi123', department: 'Technology', role: 'employee', designation: 'Developer', managerId: 'MGR002', status: 'active' },
-  { id: 'DI301', name: 'jay', email: 'jay@durkkas.com', password: 'jay@123', department: 'Engineering', role: 'employee', designation: 'developer', managerId: 'MGR002', status: 'active' },
-  { id: 'EMP002', name: 'Jane Smith', email: 'jane@durkkas.com', password: 'jane123', department: 'Engineering', role: 'employee', designation: 'Senior Software Engineer', managerId: 'MGR002', status: 'active' },
-  { id: 'EMP004', name: 'Alice Williams', email: 'alice@durkkas.com', password: 'alice123', department: 'Sales', role: 'employee', designation: 'Sales Representative', managerId: 'MGR002', status: 'active' },
-  { id: 'EMP003', name: 'Bob Johnson', email: 'bob@durkkas.com', password: 'bob123', department: 'Marketing', role: 'employee', designation: 'Marketing Executive', managerId: 'MGR002', status: 'active' },
-  { id: 'MGR002', name: 'Manager', email: 'manager@durkkas.com', password: 'manager123', department: 'Associates', role: 'manager', designation: 'Manager', managerId: 'HR001', status: 'active' },
-  { id: 'HR001', name: 'HR Person', email: 'hr@durkkas.com', password: 'hr123', department: 'HR', role: 'hr', designation: 'HR Manager', managerId: 'ADMIN001', status: 'active' },
-  { id: 'ADMIN001', name: 'Super Admin', email: 'admin@durkkas.com', password: 'admin123', department: 'Admin', role: 'superadmin', designation: 'System Administrator', managerId: null, status: 'active' },
+  { id: 'DM3011', name: 'Rahmath', email: 'rahmath@durkkas.com', password: 'rrr123', department: 'Marketing', role: 'employee', designation: 'Digital marketing', managerId: 'MGR002', status: 'active', phone: '+91 98765 43210' },
+  { id: 'DM001', name: 'AArthi', email: 'aarthi@durkkas.com', password: 'arthi123', department: 'Marketing', role: 'employee', designation: 'DigitalMarketing', managerId: 'MGR002', status: 'active', phone: '+91 98765 43211' },
+  { id: 'DI3001', name: 'Jayakumar', email: 'jayakumar@durkkas.com', password: 'jay123', department: 'Technology', role: 'employee', designation: 'Developer', managerId: 'MGR002', status: 'active', phone: '+91 98765 43212' },
+  { id: 'DI3004', name: 'Mani', email: 'mani@durkkas.com', password: 'mani123', department: 'Technology', role: 'employee', designation: 'Developer', managerId: 'MGR002', status: 'active', phone: '+91 98765 43213' },
+  { id: 'DI3005', name: 'Bharathi', email: 'bharathi@durkkas.com', password: 'Bharathi123', department: 'Technology', role: 'employee', designation: 'Developer', managerId: 'MGR002', status: 'active', phone: '+91 98765 43214' },
+  { id: 'DI301', name: 'jay', email: 'jay@durkkas.com', password: 'jay@123', department: 'Engineering', role: 'employee', designation: 'developer', managerId: 'MGR002', status: 'active', phone: '+91 98765 43215' },
+  { id: 'EMP002', name: 'Jane Smith', email: 'jane@durkkas.com', password: 'jane123', department: 'Engineering', role: 'employee', designation: 'Senior Software Engineer', managerId: 'MGR002', status: 'active', phone: '+91 98765 43216' },
+  { id: 'EMP004', name: 'Alice Williams', email: 'alice@durkkas.com', password: 'alice123', department: 'Sales', role: 'employee', designation: 'Sales Representative', managerId: 'MGR002', status: 'active', phone: '+91 98765 43217' },
+  { id: 'EMP003', name: 'Bob Johnson', email: 'bob@durkkas.com', password: 'bob123', department: 'Marketing', role: 'employee', designation: 'Marketing Executive', managerId: 'MGR002', status: 'active', phone: '+91 98765 43218' },
+  { id: 'MGR002', name: 'Manager', email: 'manager@durkkas.com', password: 'manager123', department: 'Associates', role: 'manager', designation: 'Manager', managerId: 'HR001', status: 'active', phone: '+91 98765 43219' },
+  { id: 'HR001', name: 'HR Person', email: 'hr@durkkas.com', password: 'hr123', department: 'HR', role: 'hr', designation: 'HR Manager', managerId: 'ADMIN001', status: 'active', phone: '+91 98765 43220' },
+  { id: 'ADMIN001', name: 'Super Admin', email: 'admin@durkkas.com', password: 'admin123', department: 'Admin', role: 'superadmin', designation: 'System Administrator', managerId: null, status: 'active', phone: '+91 98765 43221' },
 ];
 
 // Shared Holidays Data
@@ -113,7 +113,8 @@ export const dataService = {
           role: data.role,
           designation: data.designation,
           managerId: data.manager_id,
-          status: data.status
+          status: data.status,
+          phone: data.phone
         };
       }
 
@@ -172,7 +173,8 @@ export const dataService = {
           role: emp.role,
           designation: emp.designation,
           managerId: emp.manager_id,
-          status: emp.status
+          status: emp.status,
+          phone: emp.phone
         }));
 
         // Update local employees array with DB data
@@ -319,6 +321,7 @@ export const dataService = {
           role: employeeData.role,
           designation: employeeData.designation || null,
           manager_id: employeeData.managerId || null,
+          phone: employeeData.phone || null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }])
@@ -339,7 +342,8 @@ export const dataService = {
         department: data.department,
         role: data.role,
         designation: data.designation,
-        managerId: data.manager_id
+        managerId: data.manager_id,
+        phone: data.phone
       };
       employees.push(newEmployee);
 
@@ -352,7 +356,8 @@ export const dataService = {
           department: newEmployee.department,
           role: newEmployee.role,
           designation: newEmployee.designation,
-          managerId: newEmployee.managerId
+          managerId: newEmployee.managerId,
+          phone: newEmployee.phone
         }
       };
     } catch (error) {
@@ -398,6 +403,7 @@ export const dataService = {
         role: employeeData.role,
         designation: employeeData.designation || null,
         manager_id: employeeData.managerId || null,
+        phone: employeeData.phone,
         updated_at: new Date().toISOString()
       };
 
@@ -427,7 +433,9 @@ export const dataService = {
         department: data.department,
         role: data.role,
         designation: data.designation,
+        designation: data.designation,
         managerId: data.manager_id,
+        phone: data.phone,
         ...(employeeData.password && employeeData.password.trim() !== '' ? { password: employeeData.password } : {})
       };
 
@@ -440,7 +448,8 @@ export const dataService = {
           department: employees[existingIndex].department,
           role: employees[existingIndex].role,
           designation: employees[existingIndex].designation,
-          managerId: employees[existingIndex].managerId
+          managerId: employees[existingIndex].managerId,
+          phone: employees[existingIndex].phone
         }
       };
     } catch (error) {

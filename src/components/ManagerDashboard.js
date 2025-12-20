@@ -1042,8 +1042,8 @@ function ManagerDashboard() {
 
                       {
                         activeTab === 'apply-leave' && (
-                          <div style={{ padding: '32px' }}>
-                            <div style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '16px', marginBottom: '24px' }}>
+                          <div className="apply-leave-section">
+                            <div className="section-header">
                               <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: '#0f172a' }}>Manager Leave Application</h3>
                               <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#64748b' }}>Submit a leave request for yourself.</p>
                             </div>

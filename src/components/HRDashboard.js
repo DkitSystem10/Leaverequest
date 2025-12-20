@@ -1422,10 +1422,19 @@ function HRDashboard() {
                                                     </div>
                                                   </div>
                                                   <div style={{ padding: '12px', background: '#f8fafc', borderRadius: '8px' }}>
+                                                    <label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '4px', fontWeight: '600', textTransform: 'uppercase' }}>Reporting Manager</label>
+                                                    <div style={{ color: '#334155', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#94a3b8' }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                                      {emp.managerId ? (
+                                                        dataService.getAllEmployees().find(e => e.id === emp.managerId)?.name || emp.managerId
+                                                      ) : '-'}
+                                                    </div>
+                                                  </div>
+                                                  <div style={{ padding: '12px', background: '#f8fafc', borderRadius: '8px' }}>
                                                     <label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '4px', fontWeight: '600', textTransform: 'uppercase' }}>Phone</label>
                                                     <div style={{ color: '#334155', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#94a3b8' }}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                                                      +91 98765 43210
+                                                      {emp.phone || 'N/A'}
                                                     </div>
                                                   </div>
                                                   <div style={{ padding: '12px', background: '#f8fafc', borderRadius: '8px' }}>
