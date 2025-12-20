@@ -72,7 +72,7 @@ function HRDashboard() {
   const [departmentsStatus, setDepartmentsStatus] = useState([]);
   const [departmentsList, setDepartmentsList] = useState([]); // List of departments for dropdowns
   const [settingsView, setSettingsView] = useState(null); // 'addUser', 'addDept', 'deactivate', 'holiday'
-  const [newUser, setNewUser] = useState({ name: '', email: '', id: '', password: '', department: '', role: 'employee', designation: '', managerId: '' });
+  const [newUser, setNewUser] = useState({ name: '', email: '', id: '', password: '', department: '', role: 'employee', designation: '', managerId: '', phone: '' });
   const [isAddingUser, setIsAddingUser] = useState(false);
   const [addUserMessage, setAddUserMessage] = useState({ type: '', text: '' });
   const [newDepartment, setNewDepartment] = useState({ id: '', name: '', description: '', head: '' }); // Updated department fields
@@ -1540,7 +1540,7 @@ function HRDashboard() {
                                 });
                                 if (result.success) {
                                   setAddUserMessage({ type: 'success', text: `User "${result.data.name}" added successfully!` });
-                                  setNewUser({ name: '', email: '', id: '', password: '', department: '', role: 'employee', designation: '', managerId: '' });
+                                  setNewUser({ name: '', email: '', id: '', password: '', department: '', role: 'employee', designation: '', managerId: '', phone: '' });
                                   await loadDepartmentsStatus(); // Refresh employee lists
                                   await loadDepartments();
                                 }
@@ -1558,6 +1558,10 @@ function HRDashboard() {
                                 <div>
                                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#444' }}>Employee ID</label>
                                   <input autoComplete="off" placeholder="e.g. EMP100" value={newUser.id} onChange={e => setNewUser({ ...newUser, id: e.target.value })} required style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', background: '#f9fafb' }} />
+                                </div>
+                                <div>
+                                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#444' }}>Phone Number</label>
+                                  <input autoComplete="tel" placeholder="e.g. 9876543210" type="tel" value={newUser.phone} onChange={e => { const val = e.target.value.replace(/\D/g, '').slice(0, 10); setNewUser({ ...newUser, phone: val }); }} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', background: '#f9fafb' }} />
                                 </div>
                                 <div>
                                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#444' }}>Email</label>
@@ -1650,7 +1654,7 @@ function HRDashboard() {
                                 onChange={e => {
                                   setSelectedDeactivateDept(e.target.value);
                                   setSelectedUserForDeactivate('');
-                                  setNewUser({ name: '', email: '', id: '', password: '', department: '', role: 'employee', designation: '', managerId: '' });
+                                  setNewUser({ name: '', email: '', id: '', password: '', department: '', role: 'employee', designation: '', managerId: '', phone: '' });
                                 }}
                                 style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', background: '#f9fafb' }}
                               >
@@ -1678,7 +1682,8 @@ function HRDashboard() {
                                         department: emp.department,
                                         role: emp.role,
                                         designation: emp.designation || '',
-                                        managerId: emp.managerId || ''
+                                        managerId: emp.managerId || '',
+                                        phone: emp.phone || ''
                                       });
                                     }
                                   }}
@@ -1709,7 +1714,8 @@ function HRDashboard() {
                                     department: newUser.department,
                                     role: newUser.role,
                                     designation: newUser.designation.trim(),
-                                    managerId: newUser.managerId || null
+                                    managerId: newUser.managerId || null,
+                                    phone: newUser.phone || null
                                   });
                                   if (result.success) {
                                     setAddUserMessage({ type: 'success', text: `User "${newUser.name}" updated successfully!` });
@@ -1717,7 +1723,7 @@ function HRDashboard() {
                                     await loadDepartments();
                                     setSelectedDeactivateDept('');
                                     setSelectedUserForDeactivate('');
-                                    setNewUser({ name: '', email: '', id: '', password: '', department: '', role: 'employee', designation: '', managerId: '' });
+                                    setNewUser({ name: '', email: '', id: '', password: '', department: '', role: 'employee', designation: '', managerId: '', phone: '' });
                                   }
                                 } catch (error) {
                                   setAddUserMessage({ type: 'error', text: error.message });
@@ -1733,6 +1739,10 @@ function HRDashboard() {
                                   <div>
                                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#444' }}>Employee ID</label>
                                     <input placeholder="e.g. EMP100" value={newUser.id} disabled style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', background: '#e5e7eb', cursor: 'not-allowed' }} />
+                                  </div>
+                                  <div>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#444' }}>Phone Number</label>
+                                    <input autoComplete="tel" placeholder="e.g. 9876543210" type="tel" value={newUser.phone} onChange={e => { const val = e.target.value.replace(/\D/g, '').slice(0, 10); setNewUser({ ...newUser, phone: val }); }} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', background: '#f9fafb' }} />
                                   </div>
                                   <div>
                                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#444' }}>Email</label>

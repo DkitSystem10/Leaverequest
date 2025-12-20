@@ -352,7 +352,7 @@ function SuperAdminDashboard() {
   const [departmentsStatus, setDepartmentsStatus] = useState([]);
 
   // User Management
-  const [newUser, setNewUser] = useState({ name: '', email: '', id: '', password: '', department: '', role: 'employee', designation: '', managerId: '' });
+  const [newUser, setNewUser] = useState({ name: '', email: '', id: '', password: '', department: '', role: 'employee', designation: '', managerId: '', phone: '' });
   const [isAddingUser, setIsAddingUser] = useState(false);
   const [addUserMessage, setAddUserMessage] = useState({ type: '', text: '' });
   const [deactivateMessage, setDeactivateMessage] = useState(null);
@@ -1459,6 +1459,11 @@ function SuperAdminDashboard() {
                         </div>
 
                         <div>
+                          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#444' }}>Phone Number</label>
+                          <input autoComplete="tel" placeholder="e.g. 9876543210" type="tel" value={newUser.phone} onChange={e => { const val = e.target.value.replace(/\D/g, '').slice(0, 10); setNewUser({ ...newUser, phone: val }); }} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', background: '#f9fafb' }} />
+                        </div>
+
+                        <div>
                           <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#444' }}>Department</label>
                           <select value={newUser.department} onChange={e => setNewUser({ ...newUser, department: e.target.value })} required style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', background: '#f9fafb' }}>
                             <option value="">Select Department</option>
@@ -1540,7 +1545,7 @@ function SuperAdminDashboard() {
                         onChange={e => {
                           setSelectedDeactivateDept(e.target.value);
                           setSelectedUserForDeactivate('');
-                          setNewUser({ name: '', email: '', id: '', password: '', department: '', role: 'employee', designation: '', managerId: '' });
+                          setNewUser({ name: '', email: '', id: '', password: '', department: '', role: 'employee', designation: '', managerId: '', phone: '' });
                         }}
                         style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', background: '#f9fafb' }}
                       >
@@ -1568,7 +1573,8 @@ function SuperAdminDashboard() {
                                 department: emp.department,
                                 role: emp.role,
                                 designation: emp.designation || '',
-                                managerId: emp.managerId || ''
+                                managerId: emp.managerId || '',
+                                phone: emp.phone || ''
                               });
                             }
                           }}
@@ -1599,14 +1605,15 @@ function SuperAdminDashboard() {
                             department: newUser.department,
                             role: newUser.role,
                             designation: newUser.designation.trim(),
-                            managerId: newUser.managerId || null
+                            managerId: newUser.managerId || null,
+                            phone: newUser.phone || null
                           });
                           if (result.success) {
                             setAddUserMessage({ type: 'success', text: `User "${newUser.name}" updated successfully!` });
                             await loadDepartments();
                             setSelectedDeactivateDept('');
                             setSelectedUserForDeactivate('');
-                            setNewUser({ name: '', email: '', id: '', password: '', department: '', role: 'employee', designation: '', managerId: '' });
+                            setNewUser({ name: '', email: '', id: '', password: '', department: '', role: 'employee', designation: '', managerId: '', phone: '' });
                           }
                         } catch (error) {
                           setAddUserMessage({ type: 'error', text: error.message });
@@ -1626,6 +1633,10 @@ function SuperAdminDashboard() {
                           <div>
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#444' }}>Email</label>
                             <input autoComplete="off" placeholder="Email Address" type="email" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} required style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', background: '#f9fafb' }} />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#444' }}>Phone Number</label>
+                            <input autoComplete="tel" placeholder="e.g. 9876543210" type="tel" value={newUser.phone} onChange={e => { const val = e.target.value.replace(/\D/g, '').slice(0, 10); setNewUser({ ...newUser, phone: val }); }} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', background: '#f9fafb' }} />
                           </div>
                           <div>
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#444' }}>New Password (optional)</label>
