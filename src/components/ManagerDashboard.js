@@ -12,9 +12,9 @@ const SidebarItem = ({ active, icon, label, onClick, color }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const theme = {
-    blue: { bg: '#eff6ff', text: '#2563eb', iconBg: '#3b82f6' },
-    purple: { bg: '#f5f3ff', text: '#7c3aed', iconBg: '#8b5cf6' }
-  }[color] || { bg: '#eff6ff', text: '#2563eb', iconBg: '#3b82f6' };
+    blue: { bg: '#eff6ff', iconBg: '#3b82f6' },
+    purple: { bg: '#f5f3ff', iconBg: '#7c3aed' }
+  }[color] || { bg: '#eff6ff', iconBg: '#3b82f6' };
 
   return (
     <button
@@ -25,19 +25,21 @@ const SidebarItem = ({ active, icon, label, onClick, color }) => {
       onMouseEnter={() => setIsHovered(true)}
       style={{
         display: 'flex',
+        flexDirection: 'row',
         alignItems: 'center',
         gap: '12px',
         width: '100%',
         padding: '12px 16px',
         border: 'none',
-        background: active ? theme.bg : (isHovered ? theme.bg : 'transparent'),
+        background: active ? theme.bg : (isHovered ? '#f8fafc' : 'transparent'),
         borderRadius: '12px',
         cursor: 'pointer',
-        transition: 'all 0.1s cubic-bezier(0.4, 0, 0.2, 1)',
-        transform: isPressed ? 'scale(0.95)' : (isHovered ? 'scale(1.02)' : 'scale(1)'),
-        color: theme.text,
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        transform: isPressed ? 'scale(0.98)' : (isHovered ? 'scale(1.01)' : 'scale(1)'),
+        color: active ? '#1e293b' : '#64748b',
         fontWeight: active ? '700' : '600',
-        fontSize: '15px'
+        fontSize: '14px',
+        textAlign: 'left'
       }}
     >
       <div style={{
@@ -45,11 +47,18 @@ const SidebarItem = ({ active, icon, label, onClick, color }) => {
         background: theme.iconBg,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'all 0.2s',
-        boxShadow: active ? `0 4px 12px ${theme.iconBg}40` : 'none'
+        boxShadow: active ? `0 4px 12px ${theme.iconBg}30` : 'none',
+        flexShrink: 0
       }}>
-        {React.cloneElement(icon, { stroke: 'white' })}
+        {React.cloneElement(icon, {
+          width: '18',
+          height: '18',
+          stroke: 'white'
+        })}
       </div>
-      {label}
+      <span style={{ flex: 1 }}>
+        {label}
+      </span>
     </button>
   );
 };
@@ -410,7 +419,7 @@ function ManagerDashboard() {
         {/* LOGO */}
         <div style={{ padding: '32px 24px', borderBottom: '1px solid #f1f5f9' }}>
           <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '12px', letterSpacing: '-0.5px' }}>
-            <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' }}>
+            <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)' }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
             </div>
             <span style={{ background: 'linear-gradient(90deg, #1e293b, #334155)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Durkkas ERP</span>

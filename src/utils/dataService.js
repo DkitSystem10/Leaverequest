@@ -2010,5 +2010,274 @@ export const dataService = {
       if (matches.length > 0) return matches[matches.length - 1];
       return null;
     }
+  },
+
+  // --- HR Assistant Permissions ---
+
+  getHRAssistantPermissions: async () => {
+    const defaultPermissions = {
+      viewEmployees: true,
+      viewAttendance: true,
+      manualAttendance: true,
+      editAttendance: false,
+      viewLeaveRequests: true,
+      finalApproval: false,
+      exportReports: false,
+      manageHolidays: false,
+      manageUsers: false
+    };
+
+    try {
+      if (isSupabaseConfigured()) {
+        const { data, error } = await supabase
+          .from('app_settings')
+          .select('value')
+          .eq('key', 'hr_assistant_permissions')
+          .maybeSingle();
+
+        if (!error && data) return { ...defaultPermissions, ...data.value };
+      }
+    } catch (error) {
+      console.error('Error fetching permissions from DB:', error);
+    }
+
+    // Fallback to local storage
+    const stored = localStorage.getItem('hr_assistant_permissions');
+    if (stored) {
+      try {
+        return { ...defaultPermissions, ...JSON.parse(stored) };
+      } catch (e) {
+        return defaultPermissions;
+      }
+    }
+    return defaultPermissions;
+  },
+
+  updateHRAssistantPermissions: async (permissions) => {
+    try {
+      if (isSupabaseConfigured()) {
+        const { error } = await supabase
+          .from('app_settings')
+          .upsert({ key: 'hr_assistant_permissions', value: permissions }, { onConflict: 'key' });
+
+        if (error) console.error('Error saving permissions to DB:', error);
+      }
+    } catch (error) {
+      console.error('Error in updateHRAssistantPermissions:', error);
+    }
+
+    // Always update local storage as well
+    localStorage.setItem('hr_assistant_permissions', JSON.stringify(permissions));
+    return { success: true };
+  },
+
+  // ==========================================
+  // NEW ATTENDANCE SYSTEM METHODS
+  // ==========================================
+
+  // Get attendance records for a specific date
+  getAttendanceByDate: async (dateStr) => {
+    try {
+      if (isSupabaseConfigured()) {
+        const { data, error } = await supabase
+          .from('attendance_in')
+          .select('*')
+          .eq('date', dateStr);
+
+        if (!error && data) return data;
+      }
+
+      // Local storage fallback
+      const local = JSON.parse(localStorage.getItem('attendance_records') || '[]');
+      return local.filter(r => r.date === dateStr);
+    } catch (e) {
+      console.error('Exception in getAttendanceByDate:', e);
+      const local = JSON.parse(localStorage.getItem('attendance_records') || '[]');
+      return local.filter(r => r.date === dateStr);
+    }
+  },
+
+  // Save or update an attendance record
+  saveAttendanceRecord: async (record) => {
+    try {
+      // Calculate metrics before saving
+      const metrics = dataService.calculateAttendanceMetrics(record.inTime, record.outTime);
+      const fullRecord = { ...record, ...metrics };
+
+      if (isSupabaseConfigured()) {
+        const { data, error } = await supabase
+          .from('attendance_in')
+          .upsert(fullRecord, { onConflict: ['employeeId', 'date'] });
+
+        if (error) {
+          console.error("Error saving attendance to Supabase:", error);
+          throw error;
+        }
+        return { success: true, data };
+      }
+
+      // Local storage fallback
+      let local = JSON.parse(localStorage.getItem('attendance_records') || '[]');
+      // Check for existing record
+      const idx = local.findIndex(r => r.employeeId === record.employeeId && r.date === record.date);
+      if (idx >= 0) {
+        local[idx] = fullRecord;
+      } else {
+        local.push(fullRecord);
+      }
+      localStorage.setItem('attendance_records', JSON.stringify(local));
+      return { success: true, data: fullRecord };
+    } catch (e) {
+      console.error('Exception in saveAttendanceRecord:', e);
+      return { success: false, error: e.message };
+    }
+  },
+
+  // Helper to calculate attendance metrics based on 9:00 AM - 6:00 PM
+  calculateAttendanceMetrics: (inTime, outTime) => {
+    if (!inTime) return { status: 'Absent', workingHours: 0, lateMinutes: 0, permissionMinutes: 0, extraMinutes: 0 };
+
+    const parseTime = (t) => {
+      if (!t) return 0;
+      const [h, m] = t.split(':').map(Number);
+      return h * 60 + m;
+    };
+
+    const stdIn = 9 * 60; // 09:00 AM
+    const stdOut = 18 * 60; // 06:00 PM
+
+    const tIn = parseTime(inTime);
+    let tOut = outTime ? parseTime(outTime) : null;
+
+    let lateMinutes = Math.max(0, tIn - stdIn);
+    let extraMinutesBefore = Math.max(0, stdIn - tIn);
+    let extraMinutesAfter = 0;
+    let permissionMinutes = 0;
+    let workingMinutes = 0;
+
+    if (tOut) {
+      workingMinutes = tOut - tIn;
+      extraMinutesAfter = Math.max(0, tOut - stdOut);
+      permissionMinutes = Math.max(0, stdOut - tOut);
+    }
+
+    let statuses = [];
+    if (lateMinutes > 0) statuses.push('Late Comer');
+    if (permissionMinutes > 0) statuses.push('Permission');
+    if (extraMinutesBefore + extraMinutesAfter > 0) statuses.push('Extra Working Time');
+
+    // Determine if Full Present
+    if (tIn <= stdIn && tOut >= stdOut) {
+      statuses.push('Full Present');
+    } else if (tIn <= stdIn && statuses.length === 0) {
+      statuses.push('Present');
+    }
+
+    return {
+      status: statuses.length > 0 ? statuses.join(', ') : 'Present',
+      workingHours: workingMinutes / 60,
+      lateMinutes,
+      permissionMinutes,
+      extraMinutes: extraMinutesBefore + extraMinutesAfter,
+      isLate: lateMinutes > 0,
+      isPermission: permissionMinutes > 0,
+      isExtra: (extraMinutesBefore + extraMinutesAfter) > 0,
+      isFullPresent: tIn <= stdIn && tOut >= stdOut
+    };
+  },
+
+  // Get attendance statistics for a range or report
+  getAttendanceReport: async (filters) => {
+    try {
+      if (isSupabaseConfigured()) {
+        let query = supabase.from('attendance_in').select('*, employees(*)');
+
+        if (filters.employeeId) query = query.eq('employeeId', filters.employeeId);
+        if (filters.startDate) query = query.gte('date', filters.startDate);
+        if (filters.endDate) query = query.lte('date', filters.endDate);
+
+        const { data, error } = await query;
+        if (!error && data) return data;
+      }
+
+      // Local storage fallback
+      let local = JSON.parse(localStorage.getItem('attendance_records') || '[]');
+      if (filters.employeeId) local = local.filter(r => r.employeeId === filters.employeeId);
+      if (filters.startDate) local = local.filter(r => r.date >= filters.startDate);
+      if (filters.endDate) local = local.filter(r => r.date <= filters.endDate);
+      if (filters.department) {
+        // Join with local employees
+        return local.map(record => {
+          const emp = employees.find(e => e.id === record.employeeId);
+          return { ...record, employees: emp };
+        }).filter(r => r.employees?.department === filters.department);
+      }
+      return local;
+    } catch (e) {
+      console.error('Exception in getAttendanceReport:', e);
+      return [];
+    }
+  },
+  // Get today's attendance summary categorized
+  getTodayAttendanceSummary: async (date) => {
+    try {
+      const allEmployees = dataService.getAllEmployees();
+      const attendance = await dataService.getAttendanceByDate(date);
+      const allRequests = await dataService.getAllRequests();
+      const todayRequests = allRequests.filter(req =>
+        req.status === 'approved' &&
+        (req.startDate <= date && req.endDate >= date)
+      );
+
+      const summary = {
+        present: [],
+        late: [],
+        permission: [],
+        absent: [],
+        counts: { present: 0, late: 0, permission: 0, absent: 0 }
+      };
+
+      const stdIn = 9 * 60; // 09:00 AM
+
+      allEmployees.forEach(emp => {
+        const record = attendance.find(r => r.employeeId === emp.id);
+        const request = todayRequests.find(req => (req.employeeId || req.employee_id) === emp.id);
+
+        if (record && record.inTime) {
+          const [h, m] = record.inTime.split(':').map(Number);
+          const tIn = h * 60 + m;
+
+          if (tIn <= stdIn) {
+            summary.present.push({ ...emp, checkIn: record.inTime });
+            summary.counts.present++;
+          } else {
+            summary.late.push({ ...emp, checkIn: record.inTime });
+            summary.counts.late++;
+          }
+        } else if (request) {
+          if (request.type === 'permission') {
+            summary.permission.push({ ...emp, reason: request.reason || 'Personal Permission' });
+            summary.counts.permission++;
+          } else {
+            // Leave
+            summary.absent.push({ ...emp, reason: request.reason || 'On Leave' });
+            summary.counts.absent++;
+          }
+        } else {
+          // No record and no request
+          summary.absent.push({ ...emp, reason: 'Not Checked In' });
+          summary.counts.absent++;
+        }
+      });
+
+      return summary;
+    } catch (error) {
+      console.error('Error getting today summary:', error);
+      return {
+        present: [], late: [], permission: [], absent: [],
+        counts: { present: 0, late: 0, permission: 0, absent: 0 }
+      };
+    }
   }
+
 };

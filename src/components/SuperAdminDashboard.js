@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { dataService } from '../utils/dataService';
 import RequestList from './RequestList';
 import Reports from './Reports';
+import AttendanceManagement from './AttendanceManagement';
 import './SuperAdminDashboard.css';
 
 const SidebarItem = ({ active, icon, label, onClick, color }) => {
@@ -10,13 +11,13 @@ const SidebarItem = ({ active, icon, label, onClick, color }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const theme = {
-    blue: { bg: '#eff6ff', text: '#2563eb', iconBg: '#3b82f6' },
-    purple: { bg: '#f5f3ff', text: '#7c3aed', iconBg: '#8b5cf6' },
-    indigo: { bg: '#e0e7ff', text: '#4338ca', iconBg: '#6366f1' },
-    cyan: { bg: '#ecfeff', text: '#0891b2', iconBg: '#06b6d4' },
-    fuchsia: { bg: '#fdf4ff', text: '#a21caf', iconBg: '#d946ef' },
-    emerald: { bg: '#dcfce7', text: '#15803d', iconBg: '#22c55e' }
-  }[color] || { bg: '#eff6ff', text: '#2563eb', iconBg: '#3b82f6' };
+    blue: { bg: '#eff6ff', iconBg: '#3b82f6' },
+    purple: { bg: '#f5f3ff', iconBg: '#8b5cf6' },
+    indigo: { bg: '#e0e7ff', iconBg: '#6366f1' },
+    cyan: { bg: '#ecfeff', iconBg: '#0891b2' },
+    fuchsia: { bg: '#fdf4ff', iconBg: '#d946ef' },
+    emerald: { bg: '#dcfce7', iconBg: '#22c55e' }
+  }[color] || { bg: '#eff6ff', iconBg: '#3b82f6' };
 
   return (
     <button
@@ -27,19 +28,21 @@ const SidebarItem = ({ active, icon, label, onClick, color }) => {
       onMouseEnter={() => setIsHovered(true)}
       style={{
         display: 'flex',
+        flexDirection: 'row',
         alignItems: 'center',
         gap: '12px',
         width: '100%',
         padding: '12px 16px',
         border: 'none',
-        background: active ? theme.bg : (isHovered ? theme.bg : 'transparent'),
+        background: active ? theme.bg : (isHovered ? '#f8fafc' : 'transparent'),
         borderRadius: '12px',
         cursor: 'pointer',
-        transition: 'all 0.1s cubic-bezier(0.4, 0, 0.2, 1)',
-        transform: isPressed ? 'scale(0.95)' : (isHovered ? 'scale(1.02)' : 'scale(1)'),
-        color: theme.text,
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        transform: isPressed ? 'scale(0.98)' : (isHovered ? 'scale(1.01)' : 'scale(1)'),
+        color: active ? '#1e293b' : '#64748b',
         fontWeight: active ? '700' : '600',
-        fontSize: '15px'
+        fontSize: '14px',
+        textAlign: 'left'
       }}
     >
       <div style={{
@@ -47,11 +50,19 @@ const SidebarItem = ({ active, icon, label, onClick, color }) => {
         background: theme.iconBg,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'all 0.2s',
-        boxShadow: active ? `0 4px 12px ${theme.iconBg}40` : 'none'
+        boxShadow: active ? `0 4px 12px ${theme.iconBg}30` : 'none',
+        flexShrink: 0
       }}>
-        {React.cloneElement(icon, { fill: 'white', stroke: 'none' })}
+        {React.cloneElement(icon, {
+          width: '18',
+          height: '18',
+          fill: 'white',
+          stroke: 'none'
+        })}
       </div>
-      {label}
+      <span style={{ flex: 1 }}>
+        {label}
+      </span>
     </button>
   );
 };
@@ -134,189 +145,9 @@ function HistoryCard({ request, empName, empId, reqType, reqStatus, formatDateTi
   );
 }
 
-// Attendance Trend Chart Component
-function AttendanceTrendChart() {
-  const [trendData, setTrendData] = useState([]);
 
-  useEffect(() => {
-    const generateTrendData = () => {
-      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      const data = days.map((day, index) => ({
-        day,
-        present: Math.floor(Math.random() * 20) + 15,
-        absent: Math.floor(Math.random() * 10) + 2,
-        permission: Math.floor(Math.random() * 5) + 1
-      }));
-      setTrendData(data);
-    };
 
-    generateTrendData();
-  }, []);
 
-  const maxValue = Math.max(...trendData.map(d => d.present + d.absent + d.permission), 1);
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Chart */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '16px' }}>
-        {trendData.map((data, index) => (
-          <div key={index} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ width: '100%', display: 'flex', flexDirection: 'column-reverse', gap: '2px' }}>
-              <div
-                style={{
-                  height: `${(data.present / maxValue) * 120}px`,
-                  background: '#22c55e',
-                  borderRadius: '4px 4px 0 0',
-                  transition: 'height 0.3s'
-                }}
-                title={`Present: ${data.present}`}
-              />
-              <div
-                style={{
-                  height: `${(data.absent / maxValue) * 120}px`,
-                  background: '#ef4444',
-                  borderRadius: '4px 4px 0 0',
-                  transition: 'height 0.3s'
-                }}
-                title={`Absent: ${data.absent}`}
-              />
-              <div
-                style={{
-                  height: `${(data.permission / maxValue) * 120}px`,
-                  background: '#f59e0b',
-                  borderRadius: '4px 4px 0 0',
-                  transition: 'height 0.3s'
-                }}
-                title={`Permission: ${data.permission}`}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Days labels */}
-      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-        {trendData.map((data, index) => (
-          <div key={index} style={{ flex: 1, textAlign: 'center', fontSize: '12px', color: '#64748b' }}>
-            {data.day}
-          </div>
-        ))}
-      </div>
-
-      {/* Legend */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <div style={{ width: '12px', height: '12px', borderRadius: '2px', background: '#22c55e' }}></div>
-          <span style={{ fontSize: '12px', color: '#64748b' }}>Present</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <div style={{ width: '12px', height: '12px', borderRadius: '2px', background: '#ef4444' }}></div>
-          <span style={{ fontSize: '12px', color: '#64748b' }}>Absent</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <div style={{ width: '12px', height: '12px', borderRadius: '2px', background: '#f59e0b' }}></div>
-          <span style={{ fontSize: '12px', color: '#64748b' }}>Permission</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Employee List Component for Detailed Breakdown
-function EmployeeList({ category }) {
-  const [employees, setEmployees] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadEmployees = async () => {
-      try {
-        setLoading(true);
-        const details = await dataService.getTodayAttendanceDetails();
-
-        let filteredEmployees = [];
-        switch (category) {
-          case 'present':
-            filteredEmployees = details.presentEmployees;
-            break;
-          case 'absent':
-            filteredEmployees = details.absentEmployees;
-            break;
-          case 'permission':
-            filteredEmployees = details.permissionEmployees;
-            break;
-          default:
-            filteredEmployees = [];
-        }
-
-        setEmployees(filteredEmployees);
-      } catch (error) {
-        console.error('Error loading employees:', error);
-        setEmployees([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadEmployees();
-  }, [category]);
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px', color: '#64748b' }}>
-        Loading...
-      </div>
-    );
-  }
-
-  if (employees.length === 0) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px', color: '#64748b', fontSize: '14px' }}>
-        No employees in this category
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      {employees.map(emp => (
-        <div key={emp.id} style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '8px 12px',
-          background: 'white',
-          borderRadius: '8px',
-          fontSize: '14px',
-          border: '1px solid #e2e8f0'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{
-              width: '24px',
-              height: '24px',
-              borderRadius: '50%',
-              background: '#f1f5f9',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '10px',
-              fontWeight: 'bold',
-              color: '#64748b'
-            }}>
-              {emp.name.charAt(0).toUpperCase()}
-            </div>
-            <div>
-              <div style={{ fontWeight: '500', color: '#1e293b' }}>{emp.name}</div>
-              <div style={{ fontSize: '12px', color: '#64748b' }}>{emp.id}</div>
-            </div>
-          </div>
-          <div style={{ fontSize: '12px', color: '#64748b' }}>
-            {emp.department}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function SuperAdminDashboard() {
   const { user, logout } = useAuth();
@@ -336,11 +167,19 @@ function SuperAdminDashboard() {
   });
 
   const [userStats, setUserStats] = useState({
-    activeUsers: 0,
-    presentUsers: 0,
-    absentUsers: 0,
-    permissionUsers: 0
+    activeUsers: 0
   });
+
+  const [todaySummary, setTodaySummary] = useState({
+    present: [], late: [], permission: [], absent: [], counts: { present: 0, late: 0, permission: 0, absent: 0 }
+  });
+  const [selectedSummaryType, setSelectedSummaryType] = useState(null);
+
+  const loadTodaySummary = React.useCallback(async () => {
+    const today = new Date().toISOString().split('T')[0];
+    const summary = await dataService.getTodayAttendanceSummary(today);
+    setTodaySummary(summary);
+  }, []);
 
   // Drill-down states for Employee List
   const [selectedDeptForView, setSelectedDeptForView] = useState(null);
@@ -375,6 +214,7 @@ function SuperAdminDashboard() {
     loadAllRequestsForHistory();
     checkForNewNotifications();
     loadDepartments(); // Load departments for settings
+    loadTodaySummary(); // Load today's attendance summary
 
     const calculateStats = async () => {
       await calculateUserStats(); // Calculate user statistics
@@ -399,19 +239,13 @@ function SuperAdminDashboard() {
       // Use the new API method for getting statistics
       const stats = await dataService.getTodayAttendanceStats();
       setUserStats({
-        activeUsers: stats.activeUsers,
-        presentUsers: stats.presentUsers,
-        absentUsers: stats.absentUsers,
-        permissionUsers: stats.permissionUsers
+        activeUsers: stats.activeUsers
       });
     } catch (error) {
       console.error('Error calculating user stats:', error);
       // Set default values on error
       setUserStats({
-        activeUsers: 0,
-        presentUsers: 0,
-        absentUsers: 0,
-        permissionUsers: 0
+        activeUsers: 0
       });
     }
   };
@@ -552,6 +386,8 @@ function SuperAdminDashboard() {
           <SidebarItem active={activeTab === 'directory'} label="Employee Directory" onClick={() => { setActiveTab('directory'); setMobileMenuOpen(false); }} color="emerald" icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" /></svg>} />
 
           <SidebarItem active={activeTab === 'reports'} label="Reports" onClick={() => { setActiveTab('reports'); setMobileMenuOpen(false); }} color="purple" icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2 10a1 1 0 011-1h4a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V10zM8 4a1 1 0 011-1h4a1 1 0 011 1v16a1 1 0 01-1 1H9a1 1 0 01-1-1V4zM14 7a1 1 0 011-1h4a1 1 0 011 1v13a1 1 0 01-1 1h-4a1 1 0 01-1-1V7z" /></svg>} />
+
+          <SidebarItem active={activeTab === 'time-management'} label="Time Management" onClick={() => { setActiveTab('time-management'); setMobileMenuOpen(false); }} color="teal" icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" /></svg>} />
         </div>
 
         {/* LOGOUT */}
@@ -574,14 +410,14 @@ function SuperAdminDashboard() {
       {/* MAIN CONTENT */}
       <div className="main-content">
         <div className="dashboard-content-wrapper">
-          <div style={{ marginBottom: '40px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '8px' }}>
               <div>
                 <h1 style={{ fontSize: '32px', fontWeight: '800', color: '#0f172a', letterSpacing: '-1px', marginBottom: '8px' }}>
-                  {activeTab === 'home' ? 'Dashboard Overview' : activeTab === 'leave' ? 'Leave Management' : activeTab === 'users' ? 'User Management' : activeTab === 'holiday' ? 'Holiday Settings' : activeTab === 'directory' ? 'Employee Directory' : 'Reports & Analytics'}
+                  {activeTab === 'home' ? 'Dashboard Overview' : activeTab === 'leave' ? 'Leave Management' : activeTab === 'time-management' ? 'Time Management' : activeTab === 'users' ? 'User Management' : activeTab === 'holiday' ? 'Holiday Settings' : activeTab === 'directory' ? 'Employee Directory' : 'Reports & Analytics'}
                 </h1>
-                <p style={{ fontSize: '16px', color: '#64748b' }}>
-                  {activeTab === 'home' ? 'Real-time overview of user attendance and statistics' : activeTab === 'leave' ? 'Manage leave requests and approvals' : activeTab === 'users' ? 'Manage system users and roles' : activeTab === 'holiday' ? 'Configure company holidays' : activeTab === 'directory' ? 'Manage departments and employee records' : 'Generate and view detailed reports'}
+                <p style={{ fontSize: '16px', color: '#64748b', margin: 0 }}>
+                  {activeTab === 'home' ? 'Real-time overview of organization members and statistics' : activeTab === 'leave' ? 'Manage leave requests and approvals' : activeTab === 'time-management' ? 'Track company-wide attendance and working hours' : activeTab === 'users' ? 'Manage system users and roles' : activeTab === 'holiday' ? 'Configure company holidays' : activeTab === 'directory' ? 'Manage departments and employee records' : 'Generate and view detailed reports'}
                 </p>
               </div>
               {activeTab === 'home' && (
@@ -616,410 +452,273 @@ function SuperAdminDashboard() {
           </div>
 
           {activeTab === 'home' && (
-            <>
-              {/* Today's Report Header */}
-              <div style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', borderRadius: '20px', padding: '24px', marginBottom: '32px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '120px', height: '120px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }}></div>
-                <div style={{ position: 'absolute', bottom: '-40px', left: '-40px', width: '160px', height: '160px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }}></div>
-                <div style={{ position: 'relative', zIndex: 1 }}>
-                  <h2 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px' }}>Today's Report</h2>
-                  <p style={{ fontSize: '18px', opacity: 0.9, marginBottom: '16px' }}>
-                    {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                  </p>
-                  <div style={{ display: 'flex', gap: '32px', fontSize: '16px' }}>
-                    <div>
-                      <span style={{ opacity: 0.8 }}>Total Members: </span>
-                      <span style={{ fontWeight: '700', fontSize: '20px' }}>{userStats.activeUsers}</span>
-                    </div>
-                    <div>
-                      <span style={{ opacity: 0.8 }}>Attendance Rate: </span>
-                      <span style={{ fontWeight: '700', fontSize: '20px' }}>
-                        {userStats.activeUsers > 0 ? Math.round((userStats.presentUsers / userStats.activeUsers) * 100) : 0}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
+            <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+              {/* STATUS CARDS GRID */}
               <div className="stats-grid-4" style={{ marginBottom: '32px' }}>
-
-                {/* Card 1: Active Users */}
+                {/* Present Card */}
                 <div
-                  className={`stat-card ${activeTab === 'active-users' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('active-users')}
+                  onClick={() => setSelectedSummaryType(selectedSummaryType === 'present' ? null : 'present')}
                   style={{
-                    cursor: 'pointer',
-                    background: activeTab === 'active-users' ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' : 'white',
-                    color: activeTab === 'active-users' ? 'white' : '#1e293b',
-                    boxShadow: activeTab === 'active-users' ? '0 12px 24px rgba(34, 197, 94, 0.3)' : '0 4px 6px rgba(0, 0, 0, 0.05)',
-                    border: activeTab === 'active-users' ? 'none' : '1px solid #e2e8f0',
-                    transition: 'all 0.3s',
-                    transform: activeTab === 'active-users' ? 'translateY(-4px)' : 'translateY(0)',
-                    borderRadius: '20px',
-                    padding: '24px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    minHeight: '140px'
+                    background: 'white', borderRadius: '20px', padding: '24px', cursor: 'pointer',
+                    border: `2px solid ${selectedSummaryType === 'present' ? '#10b981' : '#f1f5f9'}`,
+                    boxShadow: selectedSummaryType === 'present' ? '0 10px 20px rgba(16, 185, 129, 0.1)' : 'none',
+                    transition: 'all 0.2s'
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: activeTab === 'active-users' ? 'rgba(255,255,255,0.2)' : '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={activeTab === 'active-users' ? 'white' : '#22c55e'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><path d="M20 8v6M23 11h-6"></path></svg>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div style={{ width: '48px', height: '48px', background: '#ecfdf5', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontSize: '24px' }}>✅</span>
                     </div>
-                    <div style={{ fontSize: '32px', fontWeight: '800' }}>{userStats.activeUsers}</div>
+                    <div style={{ fontSize: '32px', fontWeight: '800', color: '#10b981' }}>{todaySummary.counts.present}</div>
                   </div>
-                  <div style={{ fontSize: '15px', fontWeight: '600', opacity: activeTab === 'active-users' ? 0.9 : 0.7 }}>Active Users</div>
+                  <div style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b' }}>Present</div>
+                  <div style={{ fontSize: '13px', color: '#64748b' }}>On Time (&lt;= 9:00 AM)</div>
                 </div>
 
-                {/* Card 2: Present Users */}
+                {/* Late Card */}
                 <div
-                  className={`stat-card ${activeTab === 'present-users' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('present-users')}
+                  onClick={() => setSelectedSummaryType(selectedSummaryType === 'late' ? null : 'late')}
                   style={{
-                    cursor: 'pointer',
-                    background: activeTab === 'present-users' ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : 'white',
-                    color: activeTab === 'present-users' ? 'white' : '#1e293b',
-                    boxShadow: activeTab === 'present-users' ? '0 12px 24px rgba(37, 99, 235, 0.3)' : '0 4px 6px rgba(0, 0, 0, 0.05)',
-                    border: activeTab === 'present-users' ? 'none' : '1px solid #e2e8f0',
-                    transition: 'all 0.3s',
-                    transform: activeTab === 'present-users' ? 'translateY(-4px)' : 'translateY(0)',
-                    borderRadius: '20px',
-                    padding: '24px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    minHeight: '140px'
+                    background: 'white', borderRadius: '20px', padding: '24px', cursor: 'pointer',
+                    border: `2px solid ${selectedSummaryType === 'late' ? '#ef4444' : '#f1f5f9'}`,
+                    boxShadow: selectedSummaryType === 'late' ? '0 10px 20px rgba(239, 68, 68, 0.1)' : 'none',
+                    transition: 'all 0.2s'
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: activeTab === 'present-users' ? 'rgba(255,255,255,0.2)' : '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={activeTab === 'present-users' ? 'white' : '#3b82f6'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div style={{ width: '48px', height: '48px', background: '#fee2e2', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontSize: '24px' }}>⏰</span>
                     </div>
-                    <div style={{ fontSize: '32px', fontWeight: '800' }}>{userStats.presentUsers}</div>
+                    <div style={{ fontSize: '32px', fontWeight: '800', color: '#ef4444' }}>{todaySummary.counts.late}</div>
                   </div>
-                  <div style={{ fontSize: '15px', fontWeight: '600', opacity: activeTab === 'present-users' ? 0.9 : 0.7 }}>Present Users</div>
+                  <div style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b' }}>Late Comers</div>
+                  <div style={{ fontSize: '13px', color: '#64748b' }}>Check-in &gt;= 9:01 AM</div>
                 </div>
 
-                {/* Card 3: Absent Users */}
+                {/* Permission Card */}
                 <div
-                  className={`stat-card ${activeTab === 'absent-users' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('absent-users')}
+                  onClick={() => setSelectedSummaryType(selectedSummaryType === 'permission' ? null : 'permission')}
                   style={{
-                    cursor: 'pointer',
-                    background: activeTab === 'absent-users' ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' : 'white',
-                    color: activeTab === 'absent-users' ? 'white' : '#1e293b',
-                    boxShadow: activeTab === 'absent-users' ? '0 12px 24px rgba(239, 68, 68, 0.3)' : '0 4px 6px rgba(0, 0, 0, 0.05)',
-                    border: activeTab === 'absent-users' ? 'none' : '1px solid #e2e8f0',
-                    transition: 'all 0.3s',
-                    transform: activeTab === 'absent-users' ? 'translateY(-4px)' : 'translateY(0)',
-                    borderRadius: '20px',
-                    padding: '24px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    minHeight: '140px'
+                    background: 'white', borderRadius: '20px', padding: '24px', cursor: 'pointer',
+                    border: `2px solid ${selectedSummaryType === 'permission' ? '#3b82f6' : '#f1f5f9'}`,
+                    boxShadow: selectedSummaryType === 'permission' ? '0 10px 20px rgba(59, 130, 246, 0.1)' : 'none',
+                    transition: 'all 0.2s'
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: activeTab === 'absent-users' ? 'rgba(255,255,255,0.2)' : '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={activeTab === 'absent-users' ? 'white' : '#ef4444'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div style={{ width: '48px', height: '48px', background: '#dbeafe', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontSize: '24px' }}>🕐</span>
                     </div>
-                    <div style={{ fontSize: '32px', fontWeight: '800' }}>{userStats.absentUsers}</div>
+                    <div style={{ fontSize: '32px', fontWeight: '800', color: '#3b82f6' }}>{todaySummary.counts.permission}</div>
                   </div>
-                  <div style={{ fontSize: '15px', fontWeight: '600', opacity: activeTab === 'absent-users' ? 0.9 : 0.7 }}>Absent Users</div>
+                  <div style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b' }}>Permission</div>
+                  <div style={{ fontSize: '13px', color: '#64748b' }}>Approved Personal Time</div>
                 </div>
 
-                {/* Card 4: Permission Users */}
+                {/* Absent Card */}
                 <div
-                  className={`stat-card ${activeTab === 'permission-users' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('permission-users')}
+                  onClick={() => setSelectedSummaryType(selectedSummaryType === 'absent' ? null : 'absent')}
                   style={{
-                    cursor: 'pointer',
-                    background: activeTab === 'permission-users' ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : 'white',
-                    color: activeTab === 'permission-users' ? 'white' : '#1e293b',
-                    boxShadow: activeTab === 'permission-users' ? '0 12px 24px rgba(245, 158, 11, 0.3)' : '0 4px 6px rgba(0, 0, 0, 0.05)',
-                    border: activeTab === 'permission-users' ? 'none' : '1px solid #e2e8f0',
-                    transition: 'all 0.3s',
-                    transform: activeTab === 'permission-users' ? 'translateY(-4px)' : 'translateY(0)',
-                    borderRadius: '20px',
-                    padding: '24px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    minHeight: '140px'
+                    background: 'white', borderRadius: '20px', padding: '24px', cursor: 'pointer',
+                    border: `2px solid ${selectedSummaryType === 'absent' ? '#64748b' : '#f1f5f9'}`,
+                    boxShadow: selectedSummaryType === 'absent' ? '0 10px 20px rgba(100, 116, 139, 0.1)' : 'none',
+                    transition: 'all 0.2s'
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: activeTab === 'permission-users' ? 'rgba(255,255,255,0.2)' : '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={activeTab === 'permission-users' ? 'white' : '#f59e0b'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div style={{ width: '48px', height: '48px', background: '#f1f5f9', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontSize: '24px' }}>🚫</span>
                     </div>
-                    <div style={{ fontSize: '32px', fontWeight: '800' }}>{userStats.permissionUsers}</div>
+                    <div style={{ fontSize: '32px', fontWeight: '800', color: '#64748b' }}>{todaySummary.counts.absent}</div>
                   </div>
-                  <div style={{ fontSize: '15px', fontWeight: '600', opacity: activeTab === 'permission-users' ? 0.9 : 0.7 }}>Permission Users</div>
+                  <div style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b' }}>Absent</div>
+                  <div style={{ fontSize: '13px', color: '#64748b' }}>Leave or Not Joined</div>
                 </div>
               </div>
 
-              {/* Chart Section - Only show on home page */}
-              {activeTab === 'home' && (
-                <div style={{ background: 'white', borderRadius: '20px', padding: '20px', marginBottom: '32px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)' }}>
-                  <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1e293b', marginBottom: '24px' }}>User Statistics Overview</h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
-                    {/* Bar Chart */}
-                    <div>
-                      <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#64748b', marginBottom: '16px' }}>User Distribution</h4>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <span style={{ fontSize: '14px', fontWeight: '500', width: '100px' }}>Active</span>
-                          <div style={{ flex: 1, height: '24px', background: '#e5e7eb', borderRadius: '12px', overflow: 'hidden' }}>
-                            <div style={{ width: `${userStats.activeUsers > 0 ? Math.min((userStats.activeUsers / Math.max(userStats.activeUsers + userStats.absentUsers, 1)) * 100, 100) : 0}%`, height: '100%', background: '#22c55e', borderRadius: '12px', transition: 'width 0.3s' }}></div>
-                          </div>
-                          <span style={{ fontSize: '14px', fontWeight: '600', color: '#22c55e', minWidth: '40px' }}>{userStats.activeUsers}</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <span style={{ fontSize: '14px', fontWeight: '500', width: '100px' }}>Present</span>
-                          <div style={{ flex: 1, height: '24px', background: '#e5e7eb', borderRadius: '12px', overflow: 'hidden' }}>
-                            <div style={{ width: `${userStats.presentUsers > 0 ? Math.min((userStats.presentUsers / Math.max(userStats.presentUsers + userStats.absentUsers, 1)) * 100, 100) : 0}%`, height: '100%', background: '#3b82f6', borderRadius: '12px', transition: 'width 0.3s' }}></div>
-                          </div>
-                          <span style={{ fontSize: '14px', fontWeight: '600', color: '#3b82f6', minWidth: '40px' }}>{userStats.presentUsers}</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <span style={{ fontSize: '14px', fontWeight: '500', width: '100px' }}>Absent</span>
-                          <div style={{ flex: 1, height: '24px', background: '#e5e7eb', borderRadius: '12px', overflow: 'hidden' }}>
-                            <div style={{ width: `${userStats.absentUsers > 0 ? Math.min((userStats.absentUsers / Math.max(userStats.presentUsers + userStats.absentUsers, 1)) * 100, 100) : 0}%`, height: '100%', background: '#ef4444', borderRadius: '12px', transition: 'width 0.3s' }}></div>
-                          </div>
-                          <span style={{ fontSize: '14px', fontWeight: '600', color: '#ef4444', minWidth: '40px' }}>{userStats.absentUsers}</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <span style={{ fontSize: '14px', fontWeight: '500', width: '100px' }}>Permission</span>
-                          <div style={{ flex: 1, height: '24px', background: '#e5e7eb', borderRadius: '12px', overflow: 'hidden' }}>
-                            <div style={{ width: `${userStats.permissionUsers > 0 ? Math.min((userStats.permissionUsers / Math.max(userStats.activeUsers, 1)) * 100, 100) : 0}%`, height: '100%', background: '#f59e0b', borderRadius: '12px', transition: 'width 0.3s' }}></div>
-                          </div>
-                          <span style={{ fontSize: '14px', fontWeight: '600', color: '#f59e0b', minWidth: '40px' }}>{userStats.permissionUsers}</span>
-                        </div>
-                      </div>
-                    </div>
+              {/* DETAILED CATEGORY LIST */}
+              {selectedSummaryType && (
+                <div style={{ background: 'white', borderRadius: '24px', padding: '32px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', marginBottom: '40px', animation: 'fadeIn 0.3s ease-out' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+                    <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: '#1e293b' }}>
+                      {selectedSummaryType.charAt(0).toUpperCase() + selectedSummaryType.slice(1)} Employees
+                    </h3>
+                    <button
+                      onClick={() => setSelectedSummaryType(null)}
+                      style={{ background: '#f1f5f9', border: 'none', padding: '8px 12px', borderRadius: '8px', color: '#64748b', cursor: 'pointer', fontWeight: '600' }}
+                    >
+                      Close List
+                    </button>
+                  </div>
 
-                    {/* Pie Chart Representation */}
-                    <div>
-                      <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#64748b', marginBottom: '16px' }}>Attendance Overview</h4>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-                        <div style={{ width: '120px', height: '120px', borderRadius: '50%', background: 'conic-gradient(#22c55e 0deg 90deg, #3b82f6 90deg 180deg, #ef4444 180deg 270deg, #f59e0b 270deg 360deg)', position: 'relative' }}>
-                          <div style={{ position: 'absolute', inset: '20px', borderRadius: '50%', background: 'white' }}></div>
-                        </div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <div style={{ width: '12px', height: '12px', borderRadius: '2px', background: '#22c55e' }}></div>
-                            <span style={{ fontSize: '12px', color: '#64748b' }}>Active</span>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <div style={{ width: '12px', height: '12px', borderRadius: '2px', background: '#3b82f6' }}></div>
-                            <span style={{ fontSize: '12px', color: '#64748b' }}>Present</span>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <div style={{ width: '12px', height: '12px', borderRadius: '2px', background: '#ef4444' }}></div>
-                            <span style={{ fontSize: '12px', color: '#64748b' }}>Absent</span>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <div style={{ width: '12px', height: '12px', borderRadius: '2px', background: '#f59e0b' }}></div>
-                            <span style={{ fontSize: '12px', color: '#64748b' }}>Permission</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                          <th style={{ textAlign: 'left', padding: '16px', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>EMPLOYEE</th>
+                          <th style={{ textAlign: 'left', padding: '16px', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>DEPARTMENT</th>
+                          <th style={{ textAlign: 'left', padding: '16px', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>{selectedSummaryType === 'present' || selectedSummaryType === 'late' ? 'CHECK-IN TIME' : 'REASON'}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {todaySummary[selectedSummaryType].length > 0 ? todaySummary[selectedSummaryType].map((emp) => (
+                          <tr key={emp.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                            <td style={{ padding: '16px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#4f46e5' }}>
+                                  {emp.name.charAt(0)}
+                                </div>
+                                <div>
+                                  <div style={{ fontWeight: '600', color: '#1e293b' }}>{emp.name}</div>
+                                  <div style={{ fontSize: '12px', color: '#64748b' }}>{emp.id}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td style={{ padding: '16px', color: '#475569' }}>{emp.department}</td>
+                            <td style={{ padding: '16px' }}>
+                              {selectedSummaryType === 'present' || selectedSummaryType === 'late' ? (
+                                <span style={{ padding: '4px 10px', borderRadius: '6px', background: selectedSummaryType === 'present' ? '#d1fae5' : '#fee2e2', color: selectedSummaryType === 'present' ? '#059669' : '#dc2626', fontWeight: '700', fontSize: '13px' }}>
+                                  {emp.checkIn}
+                                </span>
+                              ) : (
+                                <span style={{ color: '#64748b', fontSize: '14px' }}>{emp.reason}</span>
+                              )}
+                            </td>
+                          </tr>
+                        )) : (
+                          <tr>
+                            <td colSpan="3" style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
+                              No {selectedSummaryType} employees recorded yet.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
-
-              {/* Attendance Trend Chart */}
-              <div style={{ background: 'white', borderRadius: '20px', padding: '20px', marginBottom: '32px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)' }}>
-                <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1e293b', marginBottom: '24px' }}>Weekly Attendance Trend</h3>
-                <div style={{ height: '200px', position: 'relative' }}>
-                  <AttendanceTrendChart />
-                </div>
-              </div>
-
-              {/* Detailed Breakdown Section */}
-              <div style={{ background: 'white', borderRadius: '20px', padding: '20px', marginBottom: '32px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)' }}>
-                <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1e293b', marginBottom: '24px' }}>Detailed Employee Breakdown</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
-
-                  {/* Present Employees */}
-                  <div>
-                    <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#22c55e', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }}></div>
-                      Present Users ({userStats.presentUsers})
-                    </h4>
-                    <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px', minHeight: '200px' }}>
-                      <EmployeeList category="present" />
-                    </div>
-                  </div>
-
-                  {/* Absent Employees */}
-                  <div>
-                    <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#ef4444', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444' }}></div>
-                      Absent Users ({userStats.absentUsers})
-                    </h4>
-                    <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px', minHeight: '200px' }}>
-                      <EmployeeList category="absent" />
-                    </div>
-                  </div>
-
-                  {/* Permission Employees */}
-                  <div>
-                    <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#f59e0b', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b' }}></div>
-                      Permission Users ({userStats.permissionUsers})
-                    </h4>
-                    <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px', minHeight: '200px' }}>
-                      <EmployeeList category="permission" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </>
+            </div>
           )}
 
           {activeTab === 'leave' && (
-            <>
-              {/* Leave Management Stats */}
-              <div className="stats-grid-4" style={{ marginBottom: '32px' }}>
-
-                {/* Card 1: Today Requests (Matches HR Total) */}
-                <div
-                  className={`stat-card ${activeTab === 'leave' && viewMode === 'today' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveTab('leave');
-                    setViewMode('today');
-                  }}
-                  style={{
-                    cursor: 'pointer',
-                    background: activeTab === 'requests' && viewMode === 'today' ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : 'white',
-                    color: activeTab === 'requests' && viewMode === 'today' ? 'white' : '#1e293b',
-                    boxShadow: activeTab === 'requests' && viewMode === 'today' ? '0 12px 24px rgba(37, 99, 235, 0.3)' : '0 4px 6px rgba(0, 0, 0, 0.05)',
-                    border: activeTab === 'requests' && viewMode === 'today' ? 'none' : '1px solid #e2e8f0',
-                    transition: 'all 0.3s',
-                    transform: activeTab === 'requests' && viewMode === 'today' ? 'translateY(-4px)' : 'translateY(0)',
-                    borderRadius: '20px',
-                    padding: '24px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    minHeight: '140px'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: activeTab === 'requests' && viewMode === 'today' ? 'rgba(255,255,255,0.2)' : '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={activeTab === 'requests' && viewMode === 'today' ? 'white' : '#2563eb'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                    </div>
-                    <div style={{ fontSize: '32px', fontWeight: '800' }}>{stats.total}</div>
+            <div className="stats-grid-4" style={{ marginBottom: '32px' }}>
+              <div
+                className={`stat-card ${activeTab === 'leave' && viewMode === 'today' ? 'active' : ''}`}
+                onClick={() => { setViewMode('today'); }}
+                style={{
+                  cursor: 'pointer',
+                  background: viewMode === 'today' ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : 'white',
+                  color: viewMode === 'today' ? 'white' : '#1e293b',
+                  boxShadow: viewMode === 'today' ? '0 12px 24px rgba(37, 99, 235, 0.3)' : '0 4px 6px rgba(0, 0, 0, 0.05)',
+                  border: viewMode === 'today' ? 'none' : '1px solid #e2e8f0',
+                  transition: 'all 0.3s',
+                  transform: viewMode === 'today' ? 'translateY(-4px)' : 'translateY(0)',
+                  borderRadius: '20px',
+                  padding: '24px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  minHeight: '140px'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: viewMode === 'today' ? 'rgba(255,255,255,0.2)' : '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={viewMode === 'today' ? 'white' : '#2563eb'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                   </div>
-                  <div style={{ fontSize: '15px', fontWeight: '600', opacity: activeTab === 'leave' && viewMode === 'today' ? 0.9 : 0.7 }}>Today Leave Requests</div>
+                  <div style={{ fontSize: '32px', fontWeight: '800' }}>{stats.total}</div>
                 </div>
-
-                {/* Card 2: Pending (Matches HR Pending) */}
-                <div
-                  className={`stat-card ${activeTab === 'leave' && viewMode === 'pending' ? 'active' : ''}`}
-                  onClick={async () => {
-                    setActiveTab('leave');
-                    setViewMode('pending');
-                    const pendingRequests = await dataService.getRequestsBySuperAdmin();
-                    setRequests(pendingRequests);
-                  }}
-                  style={{
-                    cursor: 'pointer',
-                    background: activeTab === 'requests' && viewMode === 'pending' ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : 'white',
-                    color: activeTab === 'requests' && viewMode === 'pending' ? 'white' : '#1e293b',
-                    boxShadow: activeTab === 'requests' && viewMode === 'pending' ? '0 12px 24px rgba(37, 99, 235, 0.3)' : '0 4px 6px rgba(0, 0, 0, 0.05)',
-                    border: activeTab === 'requests' && viewMode === 'pending' ? 'none' : '1px solid #e2e8f0',
-                    transition: 'all 0.3s',
-                    transform: activeTab === 'requests' && viewMode === 'pending' ? 'translateY(-4px)' : 'translateY(0)',
-                    borderRadius: '20px',
-                    padding: '24px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    minHeight: '140px'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: activeTab === 'requests' && viewMode === 'pending' ? 'rgba(255,255,255,0.2)' : '#fffbeb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={activeTab === 'requests' && viewMode === 'pending' ? 'white' : '#d97706'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    </div>
-                    <div style={{ fontSize: '32px', fontWeight: '800' }}>{stats.pending}</div>
-                  </div>
-                  <div style={{ fontSize: '15px', fontWeight: '600', opacity: activeTab === 'leave' && viewMode === 'pending' ? 0.9 : 0.7 }}>Pending Approvals</div>
-                </div>
-
-                {/* Card 3: Reports (New SVG Chart) */}
-                <div
-                  className={`stat-card ${activeTab === 'reports' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('reports')}
-                  style={{
-                    cursor: 'pointer',
-                    background: activeTab === 'reports' ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : 'white',
-                    color: activeTab === 'reports' ? 'white' : '#1e293b',
-                    boxShadow: activeTab === 'reports' ? '0 12px 24px rgba(37, 99, 235, 0.3)' : '0 4px 6px rgba(0, 0, 0, 0.05)',
-                    border: activeTab === 'reports' ? 'none' : '1px solid #e2e8f0',
-                    transition: 'all 0.3s',
-                    transform: activeTab === 'reports' ? 'translateY(-4px)' : 'translateY(0)',
-                    borderRadius: '20px',
-                    padding: '24px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    minHeight: '140px'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: activeTab === 'reports' ? 'rgba(255,255,255,0.2)' : '#f0f9ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={activeTab === 'reports' ? 'white' : '#0ea5e9'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                    </div>
-                    <div style={{ fontSize: '20px', fontWeight: '800' }}>View</div>
-                  </div>
-                  <div style={{ fontSize: '15px', fontWeight: '600', opacity: activeTab === 'reports' ? 0.9 : 0.7 }}>Reports & Analytics</div>
-                </div>
-
-                {/* Card 4: History (New SVG History) */}
-                <div
-                  className={`stat-card ${activeTab === 'history' ? 'active' : ''}`}
-                  onClick={async () => {
-                    setActiveTab('history');
-                    await loadAllRequestsForHistory();
-                  }}
-                  style={{
-                    cursor: 'pointer',
-                    background: activeTab === 'history' ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : 'white',
-                    color: activeTab === 'history' ? 'white' : '#1e293b',
-                    boxShadow: activeTab === 'history' ? '0 12px 24px rgba(37, 99, 235, 0.3)' : '0 4px 6px rgba(0, 0, 0, 0.05)',
-                    border: activeTab === 'history' ? 'none' : '1px solid #e2e8f0',
-                    transition: 'all 0.3s',
-                    transform: activeTab === 'history' ? 'translateY(-4px)' : 'translateY(0)',
-                    borderRadius: '20px',
-                    padding: '24px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    minHeight: '140px'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: activeTab === 'history' ? 'rgba(255,255,255,0.2)' : '#f5f3ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={activeTab === 'history' ? 'white' : '#8b5cf6'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8v4l3 3"></path><circle cx="12" cy="12" r="10"></circle><path d="M16 2v4"></path><path d="M8 2v4"></path><line x1="4" y1="10" x2="20" y2="10"></line></svg>
-                    </div>
-                    <div style={{ fontSize: '32px', fontWeight: '800' }}>{stats.approved + stats.rejected}</div>
-                  </div>
-                  <div style={{ fontSize: '15px', fontWeight: '600', opacity: activeTab === 'history' ? 0.9 : 0.7 }}>Approval History</div>
-                </div>
+                <div style={{ fontSize: '15px', fontWeight: '600', opacity: viewMode === 'today' ? 0.9 : 0.7 }}>Today Leave Requests</div>
               </div>
-            </>
+
+              <div
+                className={`stat-card ${activeTab === 'leave' && viewMode === 'pending' ? 'active' : ''}`}
+                onClick={() => { setViewMode('pending'); }}
+                style={{
+                  cursor: 'pointer',
+                  background: viewMode === 'pending' ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : 'white',
+                  color: viewMode === 'pending' ? 'white' : '#1e293b',
+                  boxShadow: viewMode === 'pending' ? '0 12px 24px rgba(37, 99, 235, 0.3)' : '0 4px 6px rgba(0, 0, 0, 0.05)',
+                  border: viewMode === 'pending' ? 'none' : '1px solid #e2e8f0',
+                  transition: 'all 0.3s',
+                  transform: viewMode === 'pending' ? 'translateY(-4px)' : 'translateY(0)',
+                  borderRadius: '20px',
+                  padding: '24px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  minHeight: '140px'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: viewMode === 'pending' ? 'rgba(255,255,255,0.2)' : '#fffbeb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={viewMode === 'pending' ? 'white' : '#d97706'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  </div>
+                  <div style={{ fontSize: '32px', fontWeight: '800' }}>{stats.pending}</div>
+                </div>
+                <div style={{ fontSize: '15px', fontWeight: '600', opacity: viewMode === 'pending' ? 0.9 : 0.7 }}>Pending Approvals</div>
+              </div>
+
+              <div
+                className={`stat-card ${activeTab === 'reports' ? 'active' : ''}`}
+                onClick={() => setActiveTab('reports')}
+                style={{
+                  cursor: 'pointer',
+                  background: activeTab === 'reports' ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : 'white',
+                  color: activeTab === 'reports' ? 'white' : '#1e293b',
+                  boxShadow: activeTab === 'reports' ? '0 12px 24px rgba(37, 99, 235, 0.3)' : '0 4px 6px rgba(0, 0, 0, 0.05)',
+                  border: activeTab === 'reports' ? 'none' : '1px solid #e2e8f0',
+                  transition: 'all 0.3s',
+                  transform: activeTab === 'reports' ? 'translateY(-4px)' : 'translateY(0)',
+                  borderRadius: '20px',
+                  padding: '24px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  minHeight: '140px'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: activeTab === 'reports' ? 'rgba(255,255,255,0.2)' : '#f0f9ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={activeTab === 'reports' ? 'white' : '#0ea5e9'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                  </div>
+                  <div style={{ fontSize: '20px', fontWeight: '800' }}>View</div>
+                </div>
+                <div style={{ fontSize: '15px', fontWeight: '600', opacity: activeTab === 'reports' ? 0.9 : 0.7 }}>Reports & Analytics</div>
+              </div>
+
+              <div
+                className={`stat-card ${activeTab === 'history' ? 'active' : ''}`}
+                onClick={() => { setActiveTab('history'); loadAllRequestsForHistory(); }}
+                style={{
+                  cursor: 'pointer',
+                  background: activeTab === 'history' ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : 'white',
+                  color: activeTab === 'history' ? 'white' : '#1e293b',
+                  boxShadow: activeTab === 'history' ? '0 12px 24px rgba(37, 99, 235, 0.3)' : '0 4px 6px rgba(0, 0, 0, 0.05)',
+                  border: activeTab === 'history' ? 'none' : '1px solid #e2e8f0',
+                  transition: 'all 0.3s',
+                  transform: activeTab === 'history' ? 'translateY(-4px)' : 'translateY(0)',
+                  borderRadius: '20px',
+                  padding: '24px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  minHeight: '140px'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: activeTab === 'history' ? 'rgba(255,255,255,0.2)' : '#f5f3ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={activeTab === 'history' ? 'white' : '#8b5cf6'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8v4l3 3"></path><circle cx="12" cy="12" r="10"></circle><path d="M16 2v4"></path><path d="M8 2v4"></path><line x1="4" y1="10" x2="20" y2="10"></line></svg>
+                  </div>
+                  <div style={{ fontSize: '32px', fontWeight: '800' }}>{stats.approved + stats.rejected}</div>
+                </div>
+                <div style={{ fontSize: '15px', fontWeight: '600', opacity: activeTab === 'history' ? 0.9 : 0.7 }}>Approval History</div>
+              </div>
+            </div>
           )}
 
           <div className="card">
-            {/* Tabs removed - navigation through stat cards only */}
-
             {activeTab === 'leave' && (
+
               <div>
                 <div style={{ marginBottom: '20px', display: 'none' }}>
                   {/* Filter Tabs Hidden - Navigation via Stats Cards */}
@@ -1776,6 +1475,14 @@ function SuperAdminDashboard() {
               </div>
             )}
 
+            {activeTab === 'time-management' && (
+              <AttendanceManagement
+                currentUser={{ ...user, role: 'superadmin' }}
+                permissions={{ viewAttendance: true, editAttendance: true, manualAttendance: true, exportReports: true }}
+                onSaveSuccess={loadTodaySummary}
+              />
+            )}
+
             {activeTab === 'holiday' && (
               <div className="holiday-management" style={{ padding: '0', paddingBottom: '100px' }}>
                 <div id="holiday-section" style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
@@ -1822,9 +1529,9 @@ function SuperAdminDashboard() {
               </div>
             )}
           </div>
-        </div>
-      </div>
-    </div>
+        </div >
+      </div >
+    </div >
   );
 }
 
